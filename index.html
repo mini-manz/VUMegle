@@ -33,39 +33,112 @@ button.pri{background:var(--ac);color:#06101f;border:0;font-weight:600}button.of
 #gate[hidden]{display:none}
 .box{max-width:460px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
 .box h2{margin:0 0 8px}.box li{margin:6px 0;color:#c4cad8}.box label{display:flex;gap:8px;margin:14px 0}
+/* ---- look & feel v2 ---- */
+body{background:radial-gradient(1200px 600px at 20% -10%,#16203a 0,var(--bg) 60%)}
+header{background:rgba(21,25,34,.8);padding:10px 16px}header b{font-size:22px;letter-spacing:.3px;display:flex;align-items:center}
+.logo{display:inline-block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#6ea8ff,#9b7bff);margin-right:8px;box-shadow:0 0 12px #6ea8ff88}
+#status{background:#0f131b;border:1px solid var(--line);border-radius:4px;padding:5px 10px}
+header button{padding:6px 12px;border-radius:4px}
+.stage,.side{border-radius:6px}
+.ov{background:radial-gradient(circle at 50% 40%,#1a2236,#07090d);letter-spacing:.2px}
+button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.bar{gap:10px}
+.bar button,.bar select{min-height:48px;padding:0 18px;border-radius:4px;font-size:16px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.bar select{font-weight:500;padding:0 10px}
+.bar #go{flex:1 1 150px;justify-content:center;font-size:18px}
+.bar button:hover:not(:disabled),#enter:hover:not(:disabled){filter:brightness(1.15)}
+.bar button.off{background:#2a1a1f;border-color:#5a2a33}
+#stop{background:#3a1d22;border-color:#6b2a33;color:#ffb3b3}
+#pip{right:auto;bottom:auto;z-index:3;cursor:grab;touch-action:none;user-select:none;box-shadow:0 4px 18px rgba(0,0,0,.55)}
+#pip.gone{visibility:hidden;pointer-events:none}
+#selfpop{position:absolute;right:10px;top:10px;z-index:5;background:rgba(21,25,34,.96);border:1px solid var(--line);border-radius:6px;padding:12px;display:grid;gap:10px;min-width:210px}
+#selfpop[hidden]{display:none}#selfpop label{display:flex;gap:8px;align-items:center;font-size:14px}#selfpop input[type=range]{flex:1}
+.sh{padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600;color:var(--mut);text-transform:uppercase;font-size:12px;letter-spacing:1px}
+#log:empty::before{content:"Messages will show up here once you're connected.";color:var(--mut);font-size:13px;text-align:center;margin:auto}
+#chat button{border-radius:4px}#msg{border-radius:4px}
+.box{max-width:580px;width:100%;max-height:92vh;overflow:auto;border-radius:10px;padding:26px}
+.box h1{margin:0 0 6px;font-size:28px;display:flex;align-items:center}.box h3{margin:18px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--mut)}
+.sub{color:#c4cad8;margin:0}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:10px;list-style:none;padding:0;margin:0}
+.rules li{background:#0f131b;border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:0;font-size:14px}.rules b{display:block;color:var(--fg);margin-bottom:2px}
+.know{padding-left:18px;margin:0;font-size:14px}
+.box label.soft{margin:0 0 14px;color:var(--mut)}
+#enter{width:100%;min-height:48px;border-radius:4px;font-size:17px}
+@media(max-width:560px){.rules{grid-template-columns:1fr}}
+#onlinechip{display:flex;align-items:center;gap:6px;background:#0f131b;border:1px solid var(--line);border-radius:4px;padding:5px 10px;font-size:13px;color:var(--mut)}#onlinechip b{color:var(--fg)}
+.dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 8px #3ddc84}
+#stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#stats div{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:6px 8px;text-align:center}#stats b{display:block;font-size:18px}#stats span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.ov{white-space:pre-line}
+.ov img{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 12px;border:2px solid var(--line)}#lOv img{width:44px;height:44px;margin-bottom:0}
+.stage.speaking::after,#pip.speaking::after{content:"";position:absolute;inset:0;border:3px solid #3ddc84;border-radius:inherit;pointer-events:none;z-index:4;box-shadow:0 0 14px #3ddc84 inset}#pip.speaking::after{border-width:2px}
+#stop.armed{background:#7a2330;color:#fff}
+#peerinfo{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);max-height:150px;overflow:auto}#peerinfo[hidden]{display:none}
+#peerAv{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none}#peerMeta{color:var(--mut);font-size:13px}#peerBio{font-size:13px;white-space:pre-wrap;word-break:break-word;margin-top:4px;color:#c4cad8}
+#prof{position:fixed;inset:0;z-index:11;background:rgba(0,0,0,.85);display:grid;place-items:center;padding:16px}#prof[hidden]{display:none}
+#prof .box label{flex-direction:column;gap:4px;margin:10px 0}#prof .box button{min-height:44px;border-radius:4px}
+input[type=number],textarea{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:8px 12px}textarea{resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pf{display:flex;gap:14px;align-items:center;margin-top:14px}
+.av{width:84px;height:84px;border-radius:50%;background:#0f131b;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;color:var(--mut);font-size:12px;flex:none}.av img{width:100%;height:100%;object-fit:cover}
+.pbtns{display:flex;gap:8px;flex-wrap:wrap}#pCnt{color:var(--mut);text-align:right}
 </style></head><body>
 <div id="gate"><div class="box">
- <h2>Before you start</h2>
- <p>This site connects you with random strangers over live video, audio and text. You may see or hear things that are inappropriate or upsetting.</p>
- <ul>
-  <li>You must be 18 or older.</li>
-  <li>No nudity, harassment or sharing personal info. Use <b>Report</b> if someone breaks this.</li>
-  <li>Video, audio and chat go straight between you and the other person. They can see your IP address, as with any peer-to-peer call.</li>
-  <li>Your browser will ask for camera and mic access. You can still chat by text if you say no.</li>
+ <h1><i class="logo"></i>Welcome to VUMegle</h1>
+ <p class="sub">Meet random people over live video, audio and text. Press Start, say hi, and press Next whenever you want someone new. You may see or hear things that are inappropriate or upsetting.</p>
+ <h3>The rules</h3>
+ <ul class="rules">
+  <li><b>18+ only</b>You must be 18 or older to be here.</li>
+  <li><b>Be kind</b>No harassment, hate or bullying.</li>
+  <li><b>Keep it clean</b>No nudity or sexual content.</li>
+  <li><b>Stay private</b>Don't share your name, address or other personal info.</li>
  </ul>
- <label><input type="checkbox" id="ok18"> I'm 18 or older and I agree</label>
- <button id="enter" class="pri" disabled>Enter</button>
+ <h3>Good to know</h3>
+ <ul class="know">
+  <li>Video, audio and chat go straight between you and the other person and aren't saved. On a direct call they can see your IP address, as with any peer-to-peer call.</li>
+  <li>Your browser will ask for camera and mic access. You can still text chat if you say no.</li>
+  <li>Someone breaking the rules? Press <b>Report</b>, then Next.</li>
+  <li>Keyboard: press <b>Esc</b> to start, and press it twice to stop.</li>
+ </ul>
+ <label><input type="checkbox" id="ok18"> I'm 18 or older and I agree to the rules</label>
+ <label class="soft"><input type="checkbox" id="hide"> Don't show this welcome page again</label>
+ <button id="enter" class="pri" disabled>Enter VUMegle</button>
 </div></div>
 
-<header><b>VUMegle</b><span id="status">Connecting to server…</span></header>
+<header><b><i class="logo"></i>VUMegle</b><span id="onlinechip" title="People on the site right now"><i class="dot"></i><b id="onl">–</b>&nbsp;online</span><span id="status">Connecting to server…</span><button id="profbtn">Profile</button><button id="rules">Rules</button></header>
+<div id="prof" hidden><div class="box">
+ <h1>Your profile</h1>
+ <p class="sub">All optional. Whatever you fill in is shown to the people you chat with, so don't put anything private here.</p>
+ <div class="pf"><div class="av"><img id="pAv" alt="" hidden><span id="pAvT">No photo</span></div>
+  <div class="pbtns"><button id="pPick">Choose photo</button><button id="pDel">Remove</button><input type="file" id="pFile" accept="image/*" hidden></div></div>
+ <label>Name <input type="text" id="pName" maxlength="30" autocomplete="off"></label>
+ <div class="row2"><label>Age <input type="number" id="pAge" min="18" max="99"></label>
+  <label>Gender <select id="pGen"><option value="">Prefer not to say</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option></select></label></div>
+ <label>Bio <textarea id="pBio" maxlength="500" rows="4"></textarea><small id="pCnt">0 / 500</small></label>
+ <div class="row2"><button id="pCancel">Cancel</button><button id="pSave" class="pri">Save</button></div>
+</div></div>
 <main>
  <section class="left">
   <div class="stage">
    <video id="remote" autoplay playsinline></video>
    <img id="rimg" alt="" hidden>
-   <div class="ov" id="rOv">Press Start to meet someone</div>
-   <div id="pip"><video id="local" autoplay muted playsinline></video><div class="ov" id="lOv">Camera Off</div></div>
+   <div class="ov" id="rOv"><img id="rAv" alt="" hidden><span id="rTx">Press Start to meet someone</span></div>
+   <div id="pip"><video id="local" autoplay muted playsinline></video><div class="ov" id="lOv"><img id="lAv" alt="" hidden><span id="lTx">Camera Off</span></div></div>
+   <div id="selfpop" hidden><label><input type="checkbox" id="pshow"> Show my camera</label><label>Opacity <input type="range" id="pop" min="15" max="100"></label><button id="preset">Reset position</button></div>
   </div>
   <div class="bar">
-   <button id="go" class="pri" disabled>Start</button>
-   <button id="stop" hidden>Stop</button>
+   <button id="go" class="pri" disabled title="Shortcut: Esc">Start</button>
+   <button id="stop" hidden title="Shortcut: press Esc twice"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>Stop</button>
    <button id="cam">Cam</button>
    <button id="mic">Mic</button>
+   <button id="self" title="Move, hide or fade your own camera"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="12" y="12" width="6" height="5" rx="1"/></svg>Self view</button>
    <select id="q" title="Camera quality"></select>
-   <button id="rep" disabled>Report</button>
+   <button id="rep" disabled><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg>Report</button>
   </div>
+  <div id="stats" title="Visitors who opened the site. A browser is counted once per 30 minutes; all-time counts each browser once."><div><b id="s1">–</b><span>last hour</span></div><div><b id="s6">–</b><span>last 6 hours</span></div><div><b id="s24">–</b><span>last 24 hours</span></div><div><b id="sall">–</b><span>all time</span></div></div>
  </section>
  <section class="side">
+  <div class="sh">Chat</div>
+  <div id="peerinfo" hidden><img id="peerAv" alt="" hidden><div><b id="peerName"></b><div id="peerMeta"></div><div id="peerBio"></div></div></div>
   <div id="log"></div>
   <form id="chat"><input type="text" id="msg" maxlength="500" placeholder="Type a message…" autocomplete="off" disabled><button id="send" disabled>Send</button></form>
  </section>
@@ -75,7 +148,7 @@ button.pri{background:var(--ac);color:#06101f;border:0;font-weight:600}button.of
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getDatabase, ref, push, set, remove, onChildAdded, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getFirestore, doc, collection, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, limit, onSnapshot, runTransaction, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, collection, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, limit, onSnapshot, runTransaction, serverTimestamp, Timestamp, getCountFromServer, increment, deleteField } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ---------------- config ---------------- */
 const firebaseConfig = {
@@ -120,9 +193,15 @@ const readLS = k => { try { return localStorage.getItem(k); } catch { return nul
 const writeLS = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
 
 // Remembered between visits: cam on/off, mic on/off, camera quality, 18+ confirmation.
-const settings = Object.assign({ cam: true, mic: true, q: "720", age: false }, (() => { try { return JSON.parse(readLS("omg_settings")) || {}; } catch { return {}; } })());
+const settings = Object.assign({ cam: true, mic: true, q: "720", age: false, hide: false, pipShow: true, pipOp: 100, px: 1, py: 1, prof: {} }, (() => { try { return JSON.parse(readLS("omg_settings")) || {}; } catch { return {}; } })());
 if (!QUALITY[settings.q]) settings.q = "720";
 const save = () => writeLS("omg_settings", JSON.stringify(settings));
+const ic = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const ICON = {
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  cam: '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3z"/>',
+  off: '<path d="M3 3l18 18"/>'
+};
 
 let uid = null, mode = "idle", S = null, lastPeer = null, lastSend = 0;
 let local = { v: null, a: null }, blocked = { cam: false, mic: false };
@@ -138,12 +217,13 @@ const clearChat = () => { $("#log").textContent = ""; };
 
 function refreshRemote() {
   let t = "";
-  if (mode === "idle") t = "Press Start to meet someone";
-  else if (mode === "searching") t = "Looking for someone…";
+  if (mode === "idle") t = "Press Start to meet someone" + onlineLine();
+  else if (mode === "searching") t = "Looking for someone…" + onlineLine();
   else if (mode === "connecting") t = "Connecting…";
   else if (mode === "ended") t = "Stranger left";
   else if (!S || !S.remoteState.cam) t = "Camera Off";
-  $("#rOv").textContent = t; $("#rOv").hidden = !t;
+  const pic = S && S.profile && S.profile.pic && mode === "connected" && !S.remoteState.cam ? S.profile.pic : "";
+  $("#rTx").textContent = t; $("#rAv").hidden = !pic; if (pic) $("#rAv").src = pic; $("#rOv").hidden = !t;
 }
 function setMode(m) {
   mode = m;
@@ -153,15 +233,17 @@ function setMode(m) {
   $("#stop").hidden = m === "idle";
   $("#rep").disabled = !(m === "connected" || (m === "ended" && lastPeer));
   $("#msg").disabled = $("#send").disabled = m !== "connected";
-  refreshRemote();
+  refreshRemote(); renderPeer();
 }
 function refreshLocal() {
   const ms = new MediaStream(); if (local.v) ms.addTrack(local.v);
   $("#local").srcObject = ms;
-  $("#lOv").hidden = !!local.v; $("#lOv").textContent = blocked.cam ? "Camera blocked" : "Camera Off";
+  $("#lOv").hidden = !!local.v; $("#lTx").textContent = blocked.cam ? "Camera blocked" : "Camera Off";
+  const lp = (settings.prof && settings.prof.pic) || ""; $("#lAv").hidden = !lp; $("#lTx").hidden = !!lp; if (lp) $("#lAv").src = lp;
+  watchLocal();
   const c = $("#cam"), m = $("#mic");
-  c.textContent = local.v ? "Cam: on" : blocked.cam ? "Cam: blocked" : "Cam: off"; c.classList.toggle("off", !local.v);
-  m.textContent = local.a ? "Mic: on" : blocked.mic ? "Mic: blocked" : "Mic: off"; m.classList.toggle("off", !local.a);
+  c.innerHTML = ic(ICON.cam + (local.v ? "" : ICON.off)) + (local.v ? "Cam on" : blocked.cam ? "Cam blocked" : "Cam off"); c.classList.toggle("off", !local.v);
+  m.innerHTML = ic(ICON.mic + (local.a ? "" : ICON.off)) + (local.a ? "Mic on" : blocked.mic ? "Mic blocked" : "Mic off"); m.classList.toggle("off", !local.a);
 }
 
 /* ---------------- camera + mic ---------------- */
@@ -302,7 +384,7 @@ async function joinRoom(roomId, role, gen) {
   }).catch(() => {});
 
   pc.onicecandidate = e => { if (e.candidate) s.send("ice", e.candidate.toJSON()).catch(() => {}); };
-  pc.ontrack = e => { s.remote.addTrack(e.track); const v = $("#remote"); v.srcObject = s.remote; v.play().catch(() => {}); };
+  pc.ontrack = e => { s.remote.addTrack(e.track); if (e.track.kind === "audio") remoteMeter(s, e.track); const v = $("#remote"); v.srcObject = s.remote; v.play().catch(() => {}); };
   pc.onconnectionstatechange = () => {
     if (S !== s) return;
     const c = pc.connectionState;
@@ -353,7 +435,7 @@ async function flushIce(s) { for (const c of s.pending.splice(0)) { try { await 
 function wireDC(s, dc) {
   dc.onopen = () => {
     if (S !== s) return;
-    onConnected(s); sendState();
+    onConnected(s); sendState(); sendProfile();
     s.timers.push(setInterval(() => { if (S !== s) return; dcSend({ t: "ping" }); if (Date.now() - s.lastPing > 15000) peerGone(s, "Stranger disconnected"); }, 5000));
   };
   dc.onmessage = e => {
@@ -362,6 +444,7 @@ function wireDC(s, dc) {
     let m; try { m = JSON.parse(e.data); } catch { return; }
     if (m.t === "msg" && typeof m.text === "string") addMsg("them", m.text.slice(0, 500));
     else if (m.t === "state") { s.remoteState = { cam: !!m.cam, mic: !!m.mic }; refreshRemote(); }
+    else if (m.t === "profile") setPeerProfile(s, m.p);
     else if (m.t === "bye") peerGone(s, "Stranger left the chat");
   };
   dc.onclose = () => { if (S === s) peerGone(s, "Stranger disconnected"); };
@@ -412,7 +495,7 @@ async function endSession(bye) {
 // pictures (base64), audio is 8 kHz 8-bit sound, chat is text. Each piece is deleted a few
 // seconds after it is sent, and a person's whole node is removed when they leave or disconnect.
 let AC = null;
-const ensureAC = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); } catch {} };
+const ensureAC = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); watchLocal(); } catch {} };
 const b64 = u8 => { let t = ""; for (let i = 0; i < u8.length; i += 8192) t += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(t); };
 const unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
 const ulawEnc = x => { x = Math.max(-1, Math.min(1, x)); return (x < 0 ? 128 : 0) | Math.round(Math.log(1 + 255 * Math.abs(x)) / Math.log(256) * 127); };
@@ -449,12 +532,14 @@ function startRelay(s) {
       let o; try { o = JSON.parse(m.d); } catch { return; }
       if (o.t === "msg" && typeof o.text === "string") addMsg("them", o.text.slice(0, 500));
       else if (o.t === "state") { s.remoteState = { cam: !!o.cam, mic: !!o.mic }; refreshRemote(); }
+      else if (o.t === "profile") setPeerProfile(s, o.p);
       else if (o.t === "bye") gone(s, "Stranger left the chat");
     }
   });
   setMode("connected"); say("Connected through the relay (small, slower video).");
   addMsg("sys", "A direct connection wasn't possible, so you're on the relay: small video, about 3 frames a second.");
   rsend("j", JSON.stringify({ t: "state", cam: !!local.v, mic: !!local.a }), s);
+  sendProfile();
   R.timers.push(setInterval(() => {
     const v = $("#local");
     if (S !== s || !local.v || !v.videoWidth) return;
@@ -465,6 +550,7 @@ function startRelay(s) {
   R.timers.push(setInterval(() => {
     if (S !== s) return;
     rsend("j", JSON.stringify({ t: "state", cam: !!local.v, mic: !!local.a }), s);   // doubles as a ping, so a late joiner still learns cam/mic state
+    if ((R.n = (R.n || 0) + 1) % 3 === 0) sendProfile();   // resend every 15 s: relay messages vanish after 4 s
     if (Date.now() - s.lastPing > 20000) gone(s, "Stranger disconnected");
   }, 5000));
   relayMic();
@@ -500,7 +586,8 @@ function relayPlay(s, d) {
   if (!AC || !s.relay) return;
   try {
     const u = unb64(d), buf = AC.createBuffer(1, u.length, RELAY.rate), ch = buf.getChannelData(0);
-    for (let i = 0; i < u.length; i++) ch[i] = ulawDec(u[i]);
+    let sq = 0; for (let i = 0; i < u.length; i++) { ch[i] = ulawDec(u[i]); sq += ch[i] * ch[i]; }
+    if (Math.sqrt(sq / u.length) > 0.02) s.loud = Date.now();
     const src = AC.createBufferSource(); src.buffer = buf; src.connect(AC.destination);
     const R = s.relay, now = AC.currentTime;
     if (R.playAt < now + 0.05 || R.playAt > now + 0.8) R.playAt = now + 0.15;   // small jitter buffer
@@ -515,6 +602,140 @@ function relayStop(s) {
   remove(R.mine).catch(() => {});
   const i = $("#rimg"); i.hidden = true; i.removeAttribute("src"); $("#remote").hidden = false;
 }
+
+/* ---------------- presence + stats (Firestore, free-plan friendly) ---------------- */
+// "Online" = people whose page checked in within PRESENCE_WINDOW. Each online person costs one
+// Firestore write per PRESENCE_EVERY, so raise these if you ever near the free daily limits.
+// Set SHOW_STATS = false to switch all of this off.
+const SHOW_STATS = true, PRESENCE_EVERY = 4 * 60000, PRESENCE_WINDOW = 10 * 60000, STATS_EVERY = 3 * 60000, BUCKET = 600000;
+let online = null, stat = null, presenceOn = false, lastPing = 0, lastPoll = 0;
+function onlineLine() { return online > 1 ? "\n" + online + " online now" : ""; }
+const nf = n => n == null ? "–" : n.toLocaleString();
+const sumSince = (h, ms) => { let n = 0; for (const k in h) if ((+k + 1) * BUCKET > Date.now() - ms) n += h[k]; return n; };
+function showStats() {
+  const h = (stat && stat.h) || {}, set = (id, v) => { $(id).textContent = nf(v); };
+  set("#onl", online); set("#sall", stat && stat.total);
+  set("#s1", stat && sumSince(h, 36e5)); set("#s6", stat && sumSince(h, 6 * 36e5)); set("#s24", stat && sumSince(h, 24 * 36e5));
+  if (mode === "idle" || mode === "searching") refreshRemote();
+}
+async function pollStats() {
+  if (!SHOW_STATS || !uid || document.hidden || mode === "connected" || mode === "connecting" || Date.now() - lastPoll < 60000) return;
+  lastPoll = Date.now();
+  try { online = (await getCountFromServer(query(collection(db, "presence"), where("ts", ">", Timestamp.fromMillis(Date.now() - PRESENCE_WINDOW))))).data().count; } catch {}
+  try { stat = (await getDoc(doc(db, "stats", "main"))).data() || stat; } catch {}
+  showStats();
+}
+const ping = () => { lastPing = Date.now(); return setDoc(doc(db, "presence", uid), { ts: serverTimestamp(), exp: hoursFromNow(1) }).catch(() => {}); };
+// Counts this visit: all-time once per browser, and the hourly buckets once per 30 minutes.
+async function countMe() {
+  const now = Date.now(), b = Math.floor(now / BUCKET), isNew = readLS("omg_seen") !== uid, fresh = now - (+readLS("omg_lastvisit") || 0) > 30 * 60000;
+  if (!isNew && !fresh) return;
+  const sref = doc(db, "stats", "main"), cur = (await getDoc(sref)).data() || {}, upd = {}, h = {};
+  if (isNew) upd.total = increment(1);
+  if (fresh) h[b] = increment(1);
+  for (const k in (cur.h || {})) if (+k < b - 150) h[k] = deleteField();   // tidy buckets older than ~25 h
+  if (Object.keys(h).length) upd.h = h;
+  await setDoc(sref, upd, { merge: true });
+  writeLS("omg_seen", uid); if (fresh) writeLS("omg_lastvisit", String(now));
+}
+function startPresence() {
+  if (!SHOW_STATS || presenceOn) return; presenceOn = true;
+  countMe().catch(() => {}).then(() => { ping(); pollStats(); });
+  setInterval(() => { if (!document.hidden || mode === "connected") ping(); }, PRESENCE_EVERY);
+  setInterval(pollStats, STATS_EVERY);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { if (Date.now() - lastPing > 60000) ping(); pollStats(); } });
+}
+
+/* ---------------- profile, speaking indicator, Esc key ---------------- */
+const GENDERS = ["Male", "Female", "Non-binary", "Other"];
+// Everything a stranger sends is cleaned here before it is shown. Photos must be small JPEGs.
+function cleanProfile(p) {
+  p = p && typeof p === "object" ? p : {};
+  const one = (v, n) => typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, n) : "", age = Math.round(+p.age);
+  return {
+    name: one(p.name, 30), age: age >= 18 && age <= 99 ? age : "", gender: GENDERS.includes(p.gender) ? p.gender : "",
+    bio: typeof p.bio === "string" ? p.bio.replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, "").trim().slice(0, 500) : "",
+    pic: typeof p.pic === "string" && p.pic.length < 20000 && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(p.pic) ? p.pic : ""
+  };
+}
+const hasProf = p => !!(p.name || p.age || p.gender || p.bio || p.pic);
+function sendProfile(force) {
+  const p = cleanProfile(settings.prof);
+  if (S && (force || hasProf(p))) peerSend({ t: "profile", p });
+}
+function setPeerProfile(s, p) { if (S !== s) return; s.profile = cleanProfile(p); renderPeer(); refreshRemote(); }
+function renderPeer() {
+  const p = S && S.profile, has = !!p && hasProf(p);
+  $("#peerinfo").hidden = !has; if (!has) return;
+  $("#peerAv").hidden = !p.pic; if (p.pic) $("#peerAv").src = p.pic;
+  $("#peerName").textContent = p.name || "Stranger";
+  $("#peerMeta").textContent = [p.age, p.gender].filter(Boolean).join(" · ");
+  $("#peerBio").textContent = p.bio;
+}
+let draftPic = "";
+function showDraft() { $("#pAv").hidden = !draftPic; $("#pAvT").hidden = !!draftPic; if (draftPic) $("#pAv").src = draftPic; }
+$("#profbtn").onclick = () => {
+  const p = cleanProfile(settings.prof);
+  $("#pName").value = p.name; $("#pAge").value = p.age; $("#pGen").value = p.gender; $("#pBio").value = p.bio;
+  $("#pCnt").textContent = p.bio.length + " / 500"; draftPic = p.pic; showDraft(); $("#prof").hidden = false;
+};
+$("#pBio").oninput = e => { $("#pCnt").textContent = e.target.value.length + " / 500"; };
+$("#pPick").onclick = () => $("#pFile").click();
+$("#pDel").onclick = () => { draftPic = ""; showDraft(); };
+$("#pFile").onchange = e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => {   // centre-crop to a 96x96 JPEG so it is tiny enough to send
+    const c = document.createElement("canvas"), n = 96, m = Math.min(img.width, img.height);
+    c.width = c.height = n; c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, n, n);
+    draftPic = c.toDataURL("image/jpeg", 0.75); URL.revokeObjectURL(url); showDraft();
+  };
+  img.onerror = () => URL.revokeObjectURL(url);
+  img.src = url;
+};
+$("#pCancel").onclick = () => { $("#prof").hidden = true; };
+$("#pSave").onclick = () => {
+  settings.prof = cleanProfile({ name: $("#pName").value, age: $("#pAge").value, gender: $("#pGen").value, bio: $("#pBio").value, pic: draftPic });
+  save(); $("#prof").hidden = true; refreshLocal(); sendProfile(true);
+};
+
+// Speaking indicator: a green outline around your box and the stranger's box.
+const lvl = an => { if (!an) return 0; const b = new Uint8Array(an.fftSize); an.getByteTimeDomainData(b); let t = 0; for (const x of b) t += ((x - 128) / 128) ** 2; return Math.sqrt(t / b.length); };
+let lAn = null, lSrc = null, lTrack = null, lLoud = 0;
+function watchLocal() {
+  if (!AC || local.a === lTrack) return;
+  lTrack = local.a;
+  try { lSrc && lSrc.disconnect(); } catch {}
+  lSrc = null; if (!lTrack) return;
+  try { lAn = lAn || Object.assign(AC.createAnalyser(), { fftSize: 512 }); lSrc = AC.createMediaStreamSource(new MediaStream([lTrack])); lSrc.connect(lAn); } catch {}
+}
+function remoteMeter(s, t) {
+  if (!AC) return;
+  try { s.rAn = AC.createAnalyser(); s.rAn.fftSize = 512; AC.createMediaStreamSource(new MediaStream([t])).connect(s.rAn); } catch {}
+}
+setInterval(() => {
+  const now = Date.now();
+  if (local.a && lvl(lAn) > 0.02) lLoud = now;
+  if (S && S.rAn && lvl(S.rAn) > 0.02) S.loud = now;
+  $("#pip").classList.toggle("speaking", !!local.a && now - lLoud < 350);
+  $(".stage").classList.toggle("speaking", !!S && now - (S.loud || 0) < 350);
+}, 120);
+addEventListener("pointerdown", ensureAC, { once: true });
+
+// Esc: once to start (also to find someone new after they leave), twice to stop.
+let escAt = 0;
+const stopBtn = $("#stop"), stopHTML = stopBtn.innerHTML;
+const disarm = () => { escAt = 0; stopBtn.innerHTML = stopHTML; stopBtn.classList.remove("armed"); };
+addEventListener("keydown", e => {
+  if (e.key !== "Escape" || e.repeat) return;
+  if (!$("#gate").hidden) return;
+  if (!$("#prof").hidden) { $("#prof").hidden = true; return; }
+  if (!$("#selfpop").hidden) { $("#selfpop").hidden = true; return; }
+  if (mode === "idle" || mode === "ended") { if (!$("#go").disabled) $("#go").click(); return; }
+  if (escAt && Date.now() - escAt < 3000) { disarm(); stopBtn.click(); return; }
+  escAt = Date.now(); stopBtn.textContent = "Really? Press Esc again"; stopBtn.classList.add("armed");
+  setTimeout(() => { if (escAt && Date.now() - escAt >= 2900) disarm(); }, 3000);
+});
 
 /* ---------------- buttons ---------------- */
 $("#go").onclick = () => { ensureAC(); startSearch(); };
@@ -540,21 +761,54 @@ $("#rep").onclick = async () => {
   try { await addDoc(collection(db, "reports"), { by: uid, against: peer, room: S ? S.room : null, reason: reason.slice(0, 300), ts: serverTimestamp() }); } catch {}
   say("Reported. Finding someone new…"); startSearch();
 };
+$("#ok18").checked = !!settings.age; $("#enter").disabled = !settings.age; $("#hide").checked = !!settings.hide;
 $("#ok18").onchange = e => { $("#enter").disabled = !e.target.checked; };
-$("#enter").onclick = () => { settings.age = true; save(); ensureAC(); $("#gate").hidden = true; initMedia(); };
+let mediaStarted = false;
+$("#enter").onclick = () => {
+  settings.age = true; settings.hide = $("#hide").checked; save(); ensureAC(); $("#gate").hidden = true;
+  if (!mediaStarted) { mediaStarted = true; initMedia(); }
+};
+$("#rules").onclick = () => { $("#gate").hidden = false; };
+
+/* ---- self view: drag it, hide it, fade it ---- */
+const pip = $("#pip"), stage = $(".stage");
+function placePip() {
+  pip.style.left = settings.px * Math.max(0, stage.clientWidth - pip.offsetWidth) + "px";
+  pip.style.top = settings.py * Math.max(0, stage.clientHeight - pip.offsetHeight) + "px";
+}
+function applyPip() {
+  pip.classList.toggle("gone", !settings.pipShow); pip.style.opacity = settings.pipOp / 100;
+  $("#pshow").checked = settings.pipShow; $("#pop").value = settings.pipOp; placePip();
+}
+pip.onpointerdown = e => {
+  const st = stage.getBoundingClientRect(), r = pip.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+  pip.setPointerCapture(e.pointerId); pip.style.cursor = "grabbing";
+  pip.onpointermove = m => {
+    settings.px = Math.min(1, Math.max(0, (m.clientX - dx - st.left) / Math.max(1, st.width - r.width)));
+    settings.py = Math.min(1, Math.max(0, (m.clientY - dy - st.top) / Math.max(1, st.height - r.height)));
+    placePip();
+  };
+  pip.onpointerup = () => { pip.onpointermove = pip.onpointerup = null; pip.style.cursor = ""; save(); };
+};
+$("#self").onclick = () => { $("#selfpop").hidden = !$("#selfpop").hidden; };
+$("#pshow").onchange = e => { settings.pipShow = e.target.checked; save(); applyPip(); };
+$("#pop").oninput = e => { settings.pipOp = +e.target.value; save(); applyPip(); };
+$("#preset").onclick = () => { settings.px = settings.py = 1; save(); applyPip(); };
+new ResizeObserver(placePip).observe(stage);
+applyPip();
 addEventListener("pagehide", () => {
   try { if (S && S.relay) rsend("j", JSON.stringify({ t: "bye" })); else if (S && S.dc && S.dc.readyState === "open") S.dc.send(JSON.stringify({ t: "bye" })); } catch {}
-  if (uid) { dropQueue(); if (S && !S.connected) cleanupRoom(S.room); }
+  if (uid) { dropQueue(); if (SHOW_STATS) deleteDoc(doc(db, "presence", uid)).catch(() => {}); if (S && !S.connected) cleanupRoom(S.room); }
 });
 
 /* ---------------- start ---------------- */
 refreshLocal(); setMode("idle");
-if (settings.age) { $("#gate").hidden = true; initMedia(); }
+if (settings.age && settings.hide) { $("#gate").hidden = true; mediaStarted = true; initMedia(); }
 onAuthStateChanged(auth, u => {
   if (!u) return;
   uid = u.uid; setMode(mode); say("Ready");
   const old = readLS("omg_room"); if (old) cleanupRoom(old);   // tidy up if a tab closed mid-call
-  dropQueue();
+  dropQueue(); startPresence();
 });
 signInAnonymously(auth).catch(e => say("Couldn't sign in: " + e.message + " (turn on Anonymous sign-in in Firebase)"));
 </script></body></html>
