@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VUMegle</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d12;--card:#151922;--line:#262c39;--fg:#e8eaf0;--mut:#8b93a5;--ac:#6ea8ff}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:15px system-ui,sans-serif;display:flex;flex-direction:column}
+header{display:flex;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+header b{font-size:18px}#status{margin-left:auto;color:var(--mut);font-size:13px;text-align:right}
+main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px}
+@media(max-width:820px){main{grid-template-columns:1fr;grid-template-rows:minmax(260px,45%) 1fr}}
+.left{display:flex;flex-direction:column;gap:10px;min-height:0}
+.stage{position:relative;flex:1;min-height:200px;background:#000;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+#remote{position:absolute;inset:0}
+#rimg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}#rimg[hidden],#remote[hidden]{display:none}
+.ov{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:12px;background:#000;color:#cfd5e3;font-size:18px}
+.ov[hidden]{display:none}
+#pip{position:absolute;right:10px;bottom:10px;width:26%;min-width:110px;max-width:220px;aspect-ratio:4/3;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#000}
+#local{transform:scaleX(-1)}#pip .ov{font-size:12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,select,input[type=text]{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+button{cursor:pointer}button:disabled{opacity:.5;cursor:default}
+button.pri{background:var(--ac);color:#06101f;border:0;font-weight:600}button.off{color:#ff8a8a}
+.side{display:flex;flex-direction:column;min-height:0;background:var(--card);border:1px solid var(--line);border-radius:12px}
+#log{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:6px}
+.m{max-width:85%;padding:6px 10px;border-radius:10px;word-break:break-word;white-space:pre-wrap}
+.m.me{align-self:flex-end;background:#27406b}.m.them{align-self:flex-start;background:#262c39}
+.m.sys{align-self:center;background:none;color:var(--mut);font-size:13px}
+#chat{display:flex;gap:8px;padding:8px;border-top:1px solid var(--line)}#msg{flex:1;min-width:0}
+#gate{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.85);display:grid;place-items:center;padding:16px}
+#gate[hidden]{display:none}
+.box{max-width:460px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.box h2{margin:0 0 8px}.box li{margin:6px 0;color:#c4cad8}.box label{display:flex;gap:8px;margin:14px 0}
+</style></head><body>
+<div id="gate"><div class="box">
+ <h2>Before you start</h2>
+ <p>This site connects you with random strangers over live video, audio and text. You may see or hear things that are inappropriate or upsetting.</p>
+ <ul>
+  <li>You must be 18 or older.</li>
+  <li>No nudity, harassment or sharing personal info. Use <b>Report</b> if someone breaks this.</li>
+  <li>Video, audio and chat go straight between you and the other person. They can see your IP address, as with any peer-to-peer call.</li>
+  <li>Your browser will ask for camera and mic access. You can still chat by text if you say no.</li>
+ </ul>
+ <label><input type="checkbox" id="ok18"> I'm 18 or older and I agree</label>
+ <button id="enter" class="pri" disabled>Enter</button>
+</div></div>
+
+<header><b>VUMegle</b><span id="status">Connecting to server…</span></header>
+<main>
+ <section class="left">
+  <div class="stage">
+   <video id="remote" autoplay playsinline></video>
+   <img id="rimg" alt="" hidden>
+   <div class="ov" id="rOv">Press Start to meet someone</div>
+   <div id="pip"><video id="local" autoplay muted playsinline></video><div class="ov" id="lOv">Camera Off</div></div>
+  </div>
+  <div class="bar">
+   <button id="go" class="pri" disabled>Start</button>
+   <button id="stop" hidden>Stop</button>
+   <button id="cam">Cam</button>
+   <button id="mic">Mic</button>
+   <select id="q" title="Camera quality"></select>
+   <button id="rep" disabled>Report</button>
+  </div>
+ </section>
+ <section class="side">
+  <div id="log"></div>
+  <form id="chat"><input type="text" id="msg" maxlength="500" placeholder="Type a message…" autocomplete="off" disabled><button id="send" disabled>Send</button></form>
+ </section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, push, set, remove, onChildAdded, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getFirestore, doc, collection, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, limit, onSnapshot, runTransaction, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ---------------- config ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBKm_Y6CgISq7ieG3h4uHlbKFOG8X72O0c",
+  authDomain: "vumegle.firebaseapp.com",
+  databaseURL: "https://vumegle-default-rtdb.firebaseio.com",
+  projectId: "vumegle",
+  storageBucket: "vumegle.firebasestorage.app",
+  messagingSenderId: "1015767127013",
+  appId: "1:1015767127013:web:0721bcc4fdd9720a82950c"
+};
+// STUN finds a direct path between two people. Strict networks (some mobile/school/work)
+// need a TURN relay as well: add one here if some pairs can't connect.
+const ICE_SERVERS = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun1.l.google.com:19302" }
+  // , { urls: "turn:YOUR_HOST:3478", username: "USER", credential: "PASS" }
+];
+// Camera presets. Higher resolutions get a lower frame rate. Cameras that can't do a size
+// give the closest one they can; tiny sizes are scaled down before sending.
+const QUALITY = {
+  "64":   { label: "64×64 (tiny)",     w: 64,   h: 64,   fps: 15, kbps: 40 },
+  "256":  { label: "256×256 (low)",    w: 256,  h: 256,  fps: 20, kbps: 250 },
+  "480":  { label: "480p (SD)",        w: 640,  h: 480,  fps: 30, kbps: 900 },
+  "720":  { label: "720p (HD)",        w: 1280, h: 720,  fps: 30, kbps: 2500 },
+  "1080": { label: "1080p (Full HD)",  w: 1920, h: 1080, fps: 24, kbps: 5000 },
+  "2160": { label: "4K (low fps)",     w: 3840, h: 2160, fps: 12, kbps: 12000 }
+};
+
+/* ---------------- setup ---------------- */
+const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
+// FALLBACK RELAY: if a direct call can't connect, video, audio and chat go through Firebase
+// Realtime Database instead (small, slow, but it works on any network). Paste your Realtime
+// Database URL here to turn it on (see SETUP.txt). Leave "" to keep it off.
+const RELAY_DB_URL = "https://vumegle-default-rtdb.firebaseio.com";
+const rdb = RELAY_DB_URL ? getDatabase(app, RELAY_DB_URL) : null;
+const RELAY = { maxW: 160, fps: 3, jpeg: 0.45, rate: 8000, pktSamples: 2000 };
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const hoursFromNow = h => Timestamp.fromMillis(Date.now() + h * 3600000);
+const readLS = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const writeLS = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+
+// Remembered between visits: cam on/off, mic on/off, camera quality, 18+ confirmation.
+const settings = Object.assign({ cam: true, mic: true, q: "720", age: false }, (() => { try { return JSON.parse(readLS("omg_settings")) || {}; } catch { return {}; } })());
+if (!QUALITY[settings.q]) settings.q = "720";
+const save = () => writeLS("omg_settings", JSON.stringify(settings));
+
+let uid = null, mode = "idle", S = null, lastPeer = null, lastSend = 0;
+let local = { v: null, a: null }, blocked = { cam: false, mic: false };
+let searchGen = 0, claiming = false, qUnsubs = [], hb = null;
+
+/* ---------------- UI helpers ---------------- */
+const say = t => { $("#status").textContent = t; };
+function addMsg(who, text) {
+  const d = document.createElement("div"); d.className = "m " + who; d.textContent = text;
+  const l = $("#log"); l.appendChild(d); l.scrollTop = l.scrollHeight;
+}
+const clearChat = () => { $("#log").textContent = ""; };
+
+function refreshRemote() {
+  let t = "";
+  if (mode === "idle") t = "Press Start to meet someone";
+  else if (mode === "searching") t = "Looking for someone…";
+  else if (mode === "connecting") t = "Connecting…";
+  else if (mode === "ended") t = "Stranger left";
+  else if (!S || !S.remoteState.cam) t = "Camera Off";
+  $("#rOv").textContent = t; $("#rOv").hidden = !t;
+}
+function setMode(m) {
+  mode = m;
+  const go = $("#go");
+  go.textContent = { idle: "Start", searching: "Searching…", connecting: "Connecting…", connected: "Next", ended: "Find someone new" }[m];
+  go.disabled = !uid || m === "searching" || m === "connecting";
+  $("#stop").hidden = m === "idle";
+  $("#rep").disabled = !(m === "connected" || (m === "ended" && lastPeer));
+  $("#msg").disabled = $("#send").disabled = m !== "connected";
+  refreshRemote();
+}
+function refreshLocal() {
+  const ms = new MediaStream(); if (local.v) ms.addTrack(local.v);
+  $("#local").srcObject = ms;
+  $("#lOv").hidden = !!local.v; $("#lOv").textContent = blocked.cam ? "Camera blocked" : "Camera Off";
+  const c = $("#cam"), m = $("#mic");
+  c.textContent = local.v ? "Cam: on" : blocked.cam ? "Cam: blocked" : "Cam: off"; c.classList.toggle("off", !local.v);
+  m.textContent = local.a ? "Mic: on" : blocked.mic ? "Mic: blocked" : "Mic: off"; m.classList.toggle("off", !local.a);
+}
+
+/* ---------------- camera + mic ---------------- */
+async function acquire(kind) {
+  const key = kind === "video" ? "cam" : "mic";
+  try {
+    const q = QUALITY[settings.q];
+    const st = await navigator.mediaDevices.getUserMedia(kind === "video"
+      ? { video: { width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.fps }, resizeMode: "crop-and-scale" } }
+      : { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    blocked[key] = false;
+    return (kind === "video" ? st.getVideoTracks() : st.getAudioTracks())[0] || null;
+  } catch { blocked[key] = true; return null; }
+}
+async function initMedia() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    blocked.cam = blocked.mic = true; refreshLocal(); say("Camera and mic need a secure (https) page. Text chat still works."); return;
+  }
+  // Ask for each separately so saying no to one doesn't block the other.
+  const v = await acquire("video"), a = await acquire("audio");
+  if (settings.cam) local.v = v; else if (v) v.stop();
+  if (settings.mic) local.a = a; else if (a) a.stop();
+  refreshLocal();
+  if (blocked.cam || blocked.mic) say("Camera/mic not allowed. You can still text chat. To change this, use the lock icon in the address bar.");
+}
+async function setCam(on) {
+  settings.cam = on; save();
+  if (on) { if (!local.v) { local.v = await acquire("video"); if (!local.v) say("Camera is blocked or unavailable. Allow it in your browser's site settings, then click Cam again."); } }
+  else if (local.v) { local.v.stop(); local.v = null; }
+  refreshLocal(); await syncSenders(); sendState();
+}
+async function setMic(on) {
+  settings.mic = on; save();
+  if (on) { if (!local.a) { local.a = await acquire("audio"); if (!local.a) say("Mic is blocked or unavailable. Allow it in your browser's site settings, then click Mic again."); } }
+  else if (local.a) { local.a.stop(); local.a = null; }
+  refreshLocal(); await syncSenders(); sendState();
+}
+async function setQuality(k) {
+  settings.q = k; save();
+  if (local.v) { local.v.stop(); local.v = await acquire("video"); refreshLocal(); }
+  await syncSenders();
+}
+function bindSenders() {
+  for (const t of S.pc.getTransceivers()) {
+    const k = t.receiver.track && t.receiver.track.kind;
+    if (k === "video") S.vS = t.sender; else if (k === "audio") S.aS = t.sender;
+  }
+}
+async function tune() {
+  if (!S || !S.vS) return;
+  try {
+    const q = QUALITY[settings.q], p = S.vS.getParameters();
+    if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+    const e = p.encodings[0], st = local.v && local.v.getSettings ? local.v.getSettings() : null;
+    e.maxBitrate = q.kbps * 1000; e.maxFramerate = q.fps;
+    e.scaleResolutionDownBy = st && st.width ? Math.max(1, st.width / q.w) : 1;
+    await S.vS.setParameters(p);
+  } catch {}
+}
+async function attachLocal() {
+  if (S && S.relay) { relayMic(); return; }
+  if (!S || !S.vS || !S.aS) return;
+  try { await S.vS.replaceTrack(local.v); await S.aS.replaceTrack(local.a); } catch {}
+  await tune();
+}
+const syncSenders = attachLocal;
+const dcSend = o => { if (S && S.dc && S.dc.readyState === "open") { try { S.dc.send(JSON.stringify(o)); } catch {} } };
+const peerSend = o => { if (S && S.relay) rsend("j", JSON.stringify(o)); else dcSend(o); };
+const sendState = () => peerSend({ t: "state", cam: !!local.v, mic: !!local.a });
+
+/* ---------------- matchmaking (Firestore) ---------------- */
+const dropQueue = () => uid ? deleteDoc(doc(db, "queue", uid)).catch(() => {}) : Promise.resolve();
+function stopSearching() { qUnsubs.forEach(u => u()); qUnsubs = []; clearInterval(hb); hb = null; }
+
+async function startSearch() {
+  if (!uid) return;
+  await endSession(true);
+  stopSearching(); claiming = false;
+  const gen = ++searchGen;
+  clearChat(); lastPeer = null; setMode("searching"); say("Looking for someone…");
+  const myRef = doc(db, "queue", uid);
+  try { await setDoc(myRef, { uid, status: "waiting", room: null, ts: serverTimestamp(), exp: hoursFromNow(1) }); }
+  catch (e) { say("Couldn't join the queue: " + e.message); setMode("idle"); return; }
+  if (gen !== searchGen) return;
+  // Someone claimed me while I waited.
+  qUnsubs.push(onSnapshot(myRef, snap => {
+    const d = snap.data();
+    if (gen === searchGen && d && d.status === "matched" && d.room && !claiming && !S) joinRoom(d.room, "a", gen);
+  }, e => say("Connection problem: " + e.message)));
+  // Look for someone waiting. Of any two people, the one with the larger id does the claiming.
+  qUnsubs.push(onSnapshot(query(collection(db, "queue"), where("status", "==", "waiting"), limit(25)), snap => {
+    if (gen !== searchGen || claiming || S) return;
+    const now = Date.now(), t = d => d.ts ? d.ts.toMillis() : now;
+    const c = snap.docs.map(d => d.data()).filter(d => d.uid !== uid && d.uid < uid && now - t(d) < 50000).sort((x, y) => t(x) - t(y));
+    if (c.length) tryClaim(c, gen);
+  }, () => {}));
+  hb = setInterval(() => updateDoc(myRef, { ts: serverTimestamp() }).catch(() => {}), 20000);
+}
+
+async function tryClaim(cands, gen) {
+  claiming = true;
+  for (const o of cands) {
+    if (gen !== searchGen || S) break;
+    const roomRef = doc(collection(db, "rooms")), myRef = doc(db, "queue", uid), theirRef = doc(db, "queue", o.uid);
+    try {
+      await runTransaction(db, async tx => {
+        const [os, ms] = await Promise.all([tx.get(theirRef), tx.get(myRef)]);
+        if (!os.exists() || os.data().status !== "waiting" || !ms.exists() || ms.data().status !== "waiting") throw new Error("gone");
+        tx.set(roomRef, { users: [o.uid, uid], a: o.uid, b: uid, created: serverTimestamp(), exp: hoursFromNow(3) });
+        tx.update(theirRef, { status: "matched", room: roomRef.id });
+        tx.update(myRef, { status: "matched", room: roomRef.id });
+      });
+      claiming = false;
+      return joinRoom(roomRef.id, "b", gen);
+    } catch (e) { if (e.message !== "gone") console.warn(e); }
+  }
+  claiming = false;
+  // Maybe someone claimed me while I was busy.
+  try {
+    const d = (await getDoc(doc(db, "queue", uid))).data();
+    if (d && d.status === "matched" && d.room && !S && gen === searchGen) joinRoom(d.room, "a", gen);
+  } catch {}
+}
+
+/* ---------------- the call (WebRTC) ---------------- */
+async function joinRoom(roomId, role, gen) {
+  if (S || gen !== searchGen) return;
+  stopSearching(); claiming = false; dropQueue();
+  setMode("connecting"); say("Found someone, connecting…");
+  const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  const s = S = { room: roomId, role, pc, dc: null, vS: null, aS: null, peer: null, unsubs: [], timers: [], pending: [], chain: Promise.resolve(), remote: new MediaStream(), remoteState: { cam: false, mic: false }, connected: false, lastPing: Date.now() };
+  writeLS("omg_room", roomId);
+  const sigs = collection(db, "rooms", roomId, "signals");
+  s.send = (kind, data) => addDoc(sigs, { from: uid, kind, data: JSON.stringify(data), exp: hoursFromNow(3) });
+  getDoc(doc(db, "rooms", roomId)).then(r => {
+    if (r.exists()) s.peer = lastPeer = (r.data().users || []).find(u => u !== uid) || null;
+    if (S === s) setMode(mode);
+  }).catch(() => {});
+
+  pc.onicecandidate = e => { if (e.candidate) s.send("ice", e.candidate.toJSON()).catch(() => {}); };
+  pc.ontrack = e => { s.remote.addTrack(e.track); const v = $("#remote"); v.srcObject = s.remote; v.play().catch(() => {}); };
+  pc.onconnectionstatechange = () => {
+    if (S !== s) return;
+    const c = pc.connectionState;
+    if (c === "connected") onConnected(s);
+    else if (c === "failed") peerGone(s, "Connection lost");
+    else if (c === "disconnected") s.timers.push(setTimeout(() => { if (S === s && pc.connectionState !== "connected") peerGone(s, "Stranger disconnected"); }, 6000));
+  };
+  s.timers.push(setTimeout(() => { if (S === s && !s.connected) p2pFailed(s); }, 20000));
+
+  s.unsubs.push(onSnapshot(sigs, snap => snap.docChanges().forEach(ch => {
+    if (ch.type !== "added") return;
+    const d = ch.doc.data(); if (d.from !== uid) handleSignal(s, d.kind, JSON.parse(d.data));
+  }), () => {}));
+
+  try {
+    if (role === "b") {
+      s.dc = pc.createDataChannel("chat"); wireDC(s, s.dc);
+      pc.addTransceiver("video", { direction: "sendrecv" }); pc.addTransceiver("audio", { direction: "sendrecv" });
+      bindSenders(); await attachLocal();
+      const off = await pc.createOffer(); await pc.setLocalDescription(off);
+      await s.send("offer", { type: off.type, sdp: off.sdp });
+    } else {
+      pc.ondatachannel = e => { s.dc = e.channel; wireDC(s, e.channel); };
+    }
+  } catch (e) { console.warn(e); if (S === s) p2pFailed(s); }
+}
+
+function handleSignal(s, kind, data) {
+  s.chain = s.chain.then(async () => {
+    if (S !== s) return;
+    const pc = s.pc;
+    if (kind === "offer" && s.role === "a") {
+      await pc.setRemoteDescription(data);
+      for (const t of pc.getTransceivers()) { try { t.direction = "sendrecv"; } catch {} }
+      bindSenders(); await attachLocal();
+      const ans = await pc.createAnswer(); await pc.setLocalDescription(ans);
+      await s.send("answer", { type: ans.type, sdp: ans.sdp });
+      await flushIce(s);
+    } else if (kind === "answer" && s.role === "b") {
+      await pc.setRemoteDescription(data); await flushIce(s);
+    } else if (kind === "ice") {
+      if (pc.remoteDescription) { try { await pc.addIceCandidate(data); } catch {} } else s.pending.push(data);
+    }
+  }).catch(e => console.warn("signal", e));
+}
+async function flushIce(s) { for (const c of s.pending.splice(0)) { try { await s.pc.addIceCandidate(c); } catch {} } }
+
+function wireDC(s, dc) {
+  dc.onopen = () => {
+    if (S !== s) return;
+    onConnected(s); sendState();
+    s.timers.push(setInterval(() => { if (S !== s) return; dcSend({ t: "ping" }); if (Date.now() - s.lastPing > 15000) peerGone(s, "Stranger disconnected"); }, 5000));
+  };
+  dc.onmessage = e => {
+    if (S !== s) return;
+    s.lastPing = Date.now();
+    let m; try { m = JSON.parse(e.data); } catch { return; }
+    if (m.t === "msg" && typeof m.text === "string") addMsg("them", m.text.slice(0, 500));
+    else if (m.t === "state") { s.remoteState = { cam: !!m.cam, mic: !!m.mic }; refreshRemote(); }
+    else if (m.t === "bye") peerGone(s, "Stranger left the chat");
+  };
+  dc.onclose = () => { if (S === s) peerGone(s, "Stranger disconnected"); };
+}
+
+function onConnected(s) {
+  if (s.connected) return;
+  s.connected = true; setMode("connected"); say("Connected. Say hi!");
+  addMsg("sys", "You're chatting with a stranger.");
+  attachLocal();
+  // The server is only needed to set the call up. Remove it as soon as the call is live.
+  setTimeout(() => { if (S === s) { s.unsubs.forEach(u => u()); s.unsubs = []; } if (s.role === "b") cleanupRoom(s.room); }, 3000);
+}
+
+function peerGone(s, msg) {
+  if (S === s && s.relay) return;
+  if (S !== s) return;
+  if (!s.connected) { p2pFailed(s); return; }
+  endSession(false);
+  addMsg("sys", msg); say(msg + ". You can keep reading the chat."); setMode("ended");
+}
+
+async function cleanupRoom(roomId) {
+  if (!roomId) return;
+  try {
+    const sg = await getDocs(collection(db, "rooms", roomId, "signals"));
+    await Promise.all(sg.docs.map(d => deleteDoc(d.ref)));
+    await deleteDoc(doc(db, "rooms", roomId));
+  } catch {}
+  if (readLS("omg_room") === roomId) writeLS("omg_room", null);
+}
+
+async function endSession(bye) {
+  const s = S; if (!s) return;
+  if (s.relay && bye) { rsend("j", JSON.stringify({ t: "bye" }), s); await sleep(600); }
+  S = null;
+  if (s.relay) relayStop(s);
+  if (bye && s.dc && s.dc.readyState === "open") { try { s.dc.send(JSON.stringify({ t: "bye" })); } catch {} await sleep(150); }
+  s.timers.forEach(clearTimeout); s.unsubs.forEach(u => u());
+  try { s.dc && s.dc.close(); } catch {}
+  try { s.pc.close(); } catch {}
+  $("#remote").srcObject = null;
+  cleanupRoom(s.room);
+}
+
+/* ---------------- fallback relay (Firebase Realtime Database) ---------------- */
+// Used only when a direct connection fails. Everything is tiny on purpose: video is small JPEG
+// pictures (base64), audio is 8 kHz 8-bit sound, chat is text. Each piece is deleted a few
+// seconds after it is sent, and a person's whole node is removed when they leave or disconnect.
+let AC = null;
+const ensureAC = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); } catch {} };
+const b64 = u8 => { let t = ""; for (let i = 0; i < u8.length; i += 8192) t += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(t); };
+const unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+const ulawEnc = x => { x = Math.max(-1, Math.min(1, x)); return (x < 0 ? 128 : 0) | Math.round(Math.log(1 + 255 * Math.abs(x)) / Math.log(256) * 127); };
+const ulawDec = b => ((b & 128) ? -1 : 1) * (Math.pow(256, (b & 127) / 127) - 1) / 255;
+
+function rsend(t, d, s = S) {
+  if (!s || !s.relay) return;
+  try { const r = push(s.relay.mine); set(r, { t, d }).catch(() => {}); setTimeout(() => remove(r).catch(() => {}), 4000); } catch {}
+}
+function p2pFailed(s) {
+  if (S !== s || s.relay) return;
+  if (rdb && s.peer) startRelay(s);
+  else { say("Couldn't connect. Trying someone else…"); startSearch(); }
+}
+function gone(s, msg) {
+  if (S !== s) return;
+  endSession(false); addMsg("sys", msg); say(msg + ". You can keep reading the chat."); setMode("ended");
+}
+function startRelay(s) {
+  const base = "relay/" + s.room + "/", cv = document.createElement("canvas");
+  const R = s.relay = { mine: ref(rdb, base + uid), timers: [], playAt: 0, buf: [], src: null, proc: null, off: null };
+  try { s.pc.close(); } catch {}
+  try { s.dc && s.dc.close(); } catch {}
+  s.timers.forEach(clearTimeout); s.timers = []; s.unsubs.forEach(u => u()); s.unsubs = [];
+  s.connected = true; s.lastPing = Date.now() + 10000;
+  onDisconnect(R.mine).remove();
+  R.off = onChildAdded(ref(rdb, base + s.peer), snap => {
+    if (S !== s) return;
+    const m = snap.val(); if (!m) return;
+    s.lastPing = Date.now();
+    if (m.t === "v") { const i = $("#rimg"); i.src = m.d; i.hidden = false; $("#remote").hidden = true; }
+    else if (m.t === "a") relayPlay(s, m.d);
+    else if (m.t === "j") {
+      let o; try { o = JSON.parse(m.d); } catch { return; }
+      if (o.t === "msg" && typeof o.text === "string") addMsg("them", o.text.slice(0, 500));
+      else if (o.t === "state") { s.remoteState = { cam: !!o.cam, mic: !!o.mic }; refreshRemote(); }
+      else if (o.t === "bye") gone(s, "Stranger left the chat");
+    }
+  });
+  setMode("connected"); say("Connected through the relay (small, slower video).");
+  addMsg("sys", "A direct connection wasn't possible, so you're on the relay: small video, about 3 frames a second.");
+  rsend("j", JSON.stringify({ t: "state", cam: !!local.v, mic: !!local.a }), s);
+  R.timers.push(setInterval(() => {
+    const v = $("#local");
+    if (S !== s || !local.v || !v.videoWidth) return;
+    const w = Math.min(QUALITY[settings.q].w, RELAY.maxW), h = Math.max(1, Math.round(w * v.videoHeight / v.videoWidth));
+    cv.width = w; cv.height = h; cv.getContext("2d").drawImage(v, 0, 0, w, h);
+    rsend("v", cv.toDataURL("image/jpeg", RELAY.jpeg), s);
+  }, 1000 / RELAY.fps));
+  R.timers.push(setInterval(() => {
+    if (S !== s) return;
+    rsend("j", JSON.stringify({ t: "state", cam: !!local.v, mic: !!local.a }), s);   // doubles as a ping, so a late joiner still learns cam/mic state
+    if (Date.now() - s.lastPing > 20000) gone(s, "Stranger disconnected");
+  }, 5000));
+  relayMic();
+}
+function relayMic() {
+  const s = S; if (!s || !s.relay || !AC) return;
+  const R = s.relay;
+  try { R.src && R.src.disconnect(); } catch {}
+  R.src = null;
+  if (!local.a) return;
+  if (!R.proc) {
+    R.proc = AC.createScriptProcessor(4096, 1, 1);
+    R.proc.onaudioprocess = e => {
+      if (S !== s || !R.src) return;
+      const d = e.inputBuffer.getChannelData(0);
+      for (let i = 0; i < d.length; i++) R.buf.push(d[i]);
+      const ratio = AC.sampleRate / RELAY.rate, need = Math.floor(ratio * RELAY.pktSamples);
+      while (R.buf.length >= need) {
+        const c = R.buf.splice(0, need), out = new Uint8Array(RELAY.pktSamples);
+        for (let i = 0; i < out.length; i++) {
+          const a = Math.floor(i * ratio), b = Math.max(a + 1, Math.floor((i + 1) * ratio)); let sum = 0;
+          for (let j = a; j < b && j < c.length; j++) sum += c[j];
+          out[i] = ulawEnc(sum / (b - a));
+        }
+        rsend("a", b64(out), s);
+      }
+    };
+    R.proc.connect(AC.destination);
+  }
+  R.src = AC.createMediaStreamSource(new MediaStream([local.a])); R.src.connect(R.proc);
+}
+function relayPlay(s, d) {
+  if (!AC || !s.relay) return;
+  try {
+    const u = unb64(d), buf = AC.createBuffer(1, u.length, RELAY.rate), ch = buf.getChannelData(0);
+    for (let i = 0; i < u.length; i++) ch[i] = ulawDec(u[i]);
+    const src = AC.createBufferSource(); src.buffer = buf; src.connect(AC.destination);
+    const R = s.relay, now = AC.currentTime;
+    if (R.playAt < now + 0.05 || R.playAt > now + 0.8) R.playAt = now + 0.15;   // small jitter buffer
+    src.start(R.playAt); R.playAt += buf.duration;
+  } catch {}
+}
+function relayStop(s) {
+  const R = s.relay; if (!R) return;
+  R.timers.forEach(clearInterval);
+  try { R.off && R.off(); } catch {}
+  try { R.src && R.src.disconnect(); R.proc && R.proc.disconnect(); } catch {}
+  remove(R.mine).catch(() => {});
+  const i = $("#rimg"); i.hidden = true; i.removeAttribute("src"); $("#remote").hidden = false;
+}
+
+/* ---------------- buttons ---------------- */
+$("#go").onclick = () => { ensureAC(); startSearch(); };
+$("#stop").onclick = async () => {
+  searchGen++; stopSearching(); claiming = false;
+  await dropQueue(); await endSession(true);
+  clearChat(); lastPeer = null; setMode("idle"); say("Stopped.");
+};
+$("#cam").onclick = () => setCam(!local.v);
+$("#mic").onclick = () => setMic(!local.a);
+$("#q").innerHTML = Object.entries(QUALITY).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("");
+$("#q").value = settings.q;
+$("#q").onchange = e => setQuality(e.target.value);
+$("#chat").onsubmit = e => {
+  e.preventDefault();
+  const t = $("#msg").value.trim().slice(0, 500), now = Date.now();
+  if (!t || mode !== "connected" || now - lastSend < 400) return;
+  lastSend = now; peerSend({ t: "msg", text: t }); addMsg("me", t); $("#msg").value = "";
+};
+$("#rep").onclick = async () => {
+  const peer = S ? S.peer : lastPeer; if (!peer) return;
+  const reason = prompt("What happened? (optional, short)"); if (reason === null) return;
+  try { await addDoc(collection(db, "reports"), { by: uid, against: peer, room: S ? S.room : null, reason: reason.slice(0, 300), ts: serverTimestamp() }); } catch {}
+  say("Reported. Finding someone new…"); startSearch();
+};
+$("#ok18").onchange = e => { $("#enter").disabled = !e.target.checked; };
+$("#enter").onclick = () => { settings.age = true; save(); ensureAC(); $("#gate").hidden = true; initMedia(); };
+addEventListener("pagehide", () => {
+  try { if (S && S.relay) rsend("j", JSON.stringify({ t: "bye" })); else if (S && S.dc && S.dc.readyState === "open") S.dc.send(JSON.stringify({ t: "bye" })); } catch {}
+  if (uid) { dropQueue(); if (S && !S.connected) cleanupRoom(S.room); }
+});
+
+/* ---------------- start ---------------- */
+refreshLocal(); setMode("idle");
+if (settings.age) { $("#gate").hidden = true; initMedia(); }
+onAuthStateChanged(auth, u => {
+  if (!u) return;
+  uid = u.uid; setMode(mode); say("Ready");
+  const old = readLS("omg_room"); if (old) cleanupRoom(old);   // tidy up if a tab closed mid-call
+  dropQueue();
+});
+signInAnonymously(auth).catch(e => say("Couldn't sign in: " + e.message + " (turn on Anonymous sign-in in Firebase)"));
+</script></body></html>
