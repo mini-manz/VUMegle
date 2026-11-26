@@ -109,10 +109,15 @@ main{gap:10px;padding:6px 12px 12px}
 .stage,#localBox,.chatbox,#msg,#go{border-radius:10px}
 .stage,#localBox{background:#0e0e13}
 .ov{background:#0e0e13}
+#gprof{display:flex;align-items:center;gap:12px;margin:16px 0 0;padding:12px;background:#0f131b;border:1px solid var(--line);border-radius:10px}
+#gprof img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none}
+#gprof .gt{flex:1;min-width:0}#gprof b{display:block}#gprof span{color:var(--mut);font-size:13px}
+#gprof button{flex:none;border-radius:6px}
 </style></head><body>
 <div id="gate"><div class="box">
  <h1><i class="logo"></i>Welcome to VUMegle</h1>
  <p class="sub">Meet random people over live video, audio and text. Press Start, say hi, and press Next whenever you want someone new. You may see or hear things that are inappropriate or upsetting.</p>
+ <div id="gprof"><img id="gAv" alt="" hidden><div class="gt"><b id="gName">Welcome!</b><span id="gSub"></span></div><button id="gEdit" type="button">Edit profile</button></div>
  <h3>The rules</h3>
  <ul class="rules">
   <li><b>18+ only</b>You must be 18 or older to be here.</li>
@@ -734,8 +739,19 @@ $("#pFile").onchange = e => {
 $("#pCancel").onclick = () => { $("#prof").hidden = true; };
 $("#pSave").onclick = () => {
   settings.prof = cleanProfile({ name: $("#pName").value, age: $("#pAge").value, gender: $("#pGen").value, bio: $("#pBio").value, pic: draftPic });
-  save(); $("#prof").hidden = true; refreshLocal(); sendProfile(true);
+  save(); $("#prof").hidden = true; refreshLocal(); sendProfile(true); renderGate();
 };
+
+// Welcome page: greet the person and offer to change their profile.
+function renderGate() {
+  const p = cleanProfile(settings.prof), has = hasProf(p);
+  $("#gName").textContent = has ? "Welcome back" + (p.name ? ", " + p.name : "") : "Welcome!";
+  $("#gSub").textContent = has ? "This is what people you chat with will see." : "Want to add a name, photo or bio? It's optional, and you can change it any time.";
+  $("#gAv").hidden = !p.pic; if (p.pic) $("#gAv").src = p.pic;
+  $("#gEdit").textContent = has ? "Edit profile" : "Set up profile";
+}
+$("#gEdit").onclick = () => $("#profbtn").click();
+renderGate();
 
 // Speaking indicator: a green outline around your box and the stranger's box.
 const lvl = an => { if (!an) return 0; const b = new Uint8Array(an.fftSize); an.getByteTimeDomainData(b); let t = 0; for (const x of b) t += ((x - 128) / 128) ** 2; return Math.sqrt(t / b.length); };
@@ -773,6 +789,7 @@ function renderGo() {
 function disarm() { armed = 0; clearTimeout(armTimer); renderGo(); }
 addEventListener("keydown", e => {
   if (e.key !== "Escape" || e.repeat) return;
+  if (!$("#prof").hidden) { $("#prof").hidden = true; return; }
   if (!$("#gate").hidden) return;
   if (!$("#prof").hidden) { $("#prof").hidden = true; return; }
   if (!$("#selfpop").hidden) { $("#selfpop").hidden = true; return; }
