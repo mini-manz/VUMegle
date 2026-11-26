@@ -2,10 +2,11 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VUMegle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap">
 <style>
 :root{color-scheme:dark;--bg:#0b0d12;--card:#151922;--line:#262c39;--fg:#e8eaf0;--mut:#8b93a5;--ac:#6ea8ff}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font:15px system-ui,sans-serif;display:flex;flex-direction:column}
+body{background:var(--bg);color:var(--fg);font:15px system-ui,sans-serif,"Noto Color Emoji";display:flex;flex-direction:column}
 header{display:flex;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
 header b{font-size:18px}#status{margin-left:auto;color:var(--mut);font-size:13px;text-align:right}
 main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px}
@@ -67,8 +68,8 @@ button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;s
 @media(max-width:560px){.rules{grid-template-columns:1fr}}
 #onlinechip{display:flex;align-items:center;gap:6px;background:#0f131b;border:1px solid var(--line);border-radius:4px;padding:5px 10px;font-size:13px;color:var(--mut)}#onlinechip b{color:var(--fg)}
 .dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 8px #3ddc84}
-#stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;width:min(440px,92%);margin:20px auto 0}#stats[hidden]{display:none}
-#stats div{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:6px 8px;text-align:center}#stats b{display:block;font-size:18px}#stats span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+#stats{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:340px;margin:12px auto 0}#stats[hidden]{display:none}
+#stats div{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:5px 6px;text-align:center;flex:1 1 96px}#stats b{display:block;font-size:16px}#stats span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
 .ov{white-space:pre-line}
 .ov img{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 12px;border:2px solid var(--line)}#lOv img{width:44px;height:44px;margin-bottom:0}
 .stage.speaking::after,#pip.speaking::after{content:"";position:absolute;inset:0;border:3px solid #3ddc84;border-radius:inherit;pointer-events:none;z-index:4;box-shadow:0 0 14px #3ddc84 inset}#pip.speaking::after{border-width:2px}
@@ -120,7 +121,17 @@ main{gap:10px;padding:6px 12px 12px}
 #pip .tag{left:6px;bottom:6px}
 .ifill{fill:currentColor!important;stroke:none!important}
 #cam:not(.off) svg,#mic:not(.off) svg{color:#3ddc84}
-.devs select{flex:1 1 0;min-width:0;text-overflow:ellipsis}
+#rOv{overflow:auto}
+.tag .fl{font-weight:400}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.row3 select{min-width:0}
+.split{position:relative;display:inline-flex}
+.side .split>button:first-child{padding-right:32px}
+.side .bar button.dd{position:absolute;right:0;top:0;bottom:0;width:26px;min-height:0;padding:0;justify-content:center;background:none;border:0;border-left:1px solid var(--line);border-radius:0 4px 4px 0;color:var(--mut)}
+.side .bar button.dd:hover{color:var(--fg)}.dd svg{width:14px;height:14px}
+#devmenu{position:fixed;z-index:20;min-width:240px;max-width:min(380px,92vw);max-height:60vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px;box-shadow:0 8px 30px rgba(0,0,0,.6)}#devmenu[hidden]{display:none}
+#devmenu h4{margin:6px 8px 4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);font-weight:600}
+#devmenu button{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:0;background:none;border-radius:6px;padding:8px;font-size:14px}#devmenu button:hover{background:#1d2431}
+#devmenu button::before{content:"";display:inline-block;width:1em;flex:none}#devmenu button.sel::before{content:"✓";color:#3ddc84}
 .credit{margin:14px 0 0;font-size:11px;color:var(--mut);text-align:center}.credit a{color:inherit}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -163,9 +174,11 @@ main{gap:10px;padding:6px 12px 12px}
  <label>Name <input type="text" id="pName" maxlength="30" autocomplete="off"></label>
  <div class="row2"><label>Age <input type="number" id="pAge" min="18" max="99"></label>
   <label>Gender <select id="pGen"><option value="">Prefer not to say</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Other</option></select></label></div>
+ <label>Languages you speak (up to 3) <div class="row3"><select id="pL1"></select><select id="pL2"></select><select id="pL3"></select></div></label>
  <label>Bio <textarea id="pBio" maxlength="500" rows="4"></textarea><small id="pCnt">0 / 500</small></label>
  <div class="row2"><button id="pCancel">Cancel</button><button id="pSave" class="pri">Save</button></div>
 </div></div>
+<div id="devmenu" hidden></div>
 <main>
  <section class="left">
   <div class="stage">
@@ -185,17 +198,12 @@ main{gap:10px;padding:6px 12px 12px}
    <div id="log"></div>
   </div>
   <div class="bar">
-   <button id="cam">Cam</button>
-   <button id="mic">Mic</button>
+   <div class="split" id="camsplit"><button id="cam">Cam</button><button id="camdd" class="dd" type="button" title="Choose camera"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
+   <div class="split" id="micsplit"><button id="mic">Mic</button><button id="micdd" class="dd" type="button" title="Choose microphone and sound mode"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
    <button id="self" title="Move, hide or fade your own camera"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="12" y="12" width="6" height="5" rx="1"/></svg>Self view</button>
    <select id="q" title="Camera quality"></select>
    
    <select id="lang" title="You will only be matched with people who picked the same language (or Any)"></select>
-  </div>
-  <div class="bar devs">
-   <select id="camSel" title="Choose your camera"></select>
-   <select id="micSel" title="Choose your microphone"></select>
-   <select id="mq" title="Full = your raw mic, nothing filtered (best with headphones). Clear = browser noise filter + echo cancel."></select>
   </div>
   <div class="bottom">
    <button id="go" class="pri" disabled title="Shortcut: Esc"></button>
@@ -260,15 +268,16 @@ const ic = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
 // Icons from the sprite at the top of <body>. fill=true for the solid mic icons.
 const iu = (n, fill) => `<svg class="${fill ? "ifill" : "istroke"}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 // Name + mic status tags on each video: green mic = on, red slashed mic = off.
-function setTag(el, name, mic) {
+function setTag(el, name, mic, fl) {
   el.textContent = ""; if (name == null) return;
   el.insertAdjacentHTML("beforeend", iu(mic ? "mic" : "micoff", 1));
   const s = document.createElement("span"); s.textContent = name; el.appendChild(s); el.classList.toggle("moff", !mic);
+  if (fl) { const f = document.createElement("span"); f.className = "fl"; f.textContent = fl; el.appendChild(f); }
 }
 function renderTags() {
   const p = S && S.profile, on = !!S && mode === "connected";
-  setTag($("#rname"), on ? (p && p.name) || "Stranger" : null, !!(S && S.remoteState && S.remoteState.mic));
-  setTag($("#lname"), (settings.prof && settings.prof.name) || "You", !!local.a);
+  setTag($("#rname"), on ? (p && p.name) || "Stranger" : null, !!(S && S.remoteState && S.remoteState.mic), on ? flagsOf(p) : "");
+  setTag($("#lname"), (settings.prof && settings.prof.name) || "You", !!local.a, flagsOf(settings.prof));
 }
 const ICON = {
   mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
@@ -735,6 +744,10 @@ function startPresence() {
 }
 
 /* ---------------- profile, speaking indicator, Esc key ---------------- */
+const LANGS = [["en", "🇺🇸 English"], ["es", "🇪🇸 Español"], ["fr", "🇫🇷 Français"], ["de", "🇩🇪 Deutsch"], ["pt", "🇵🇹 Português"], ["it", "🇮🇹 Italiano"], ["ru", "🇷🇺 Русский"], ["tr", "🇹🇷 Türkçe"], ["ar", "🇸🇦 العربية"], ["hi", "🇮🇳 हिन्दी"], ["zh", "🇨🇳 中文"], ["ja", "🇯🇵 日本語"], ["ko", "🇰🇷 한국어"], ["any", "🌐 Any language"]];
+const labOf = c => (LANGS.find(x => x[0] === c) || [0, ""])[1];
+const flagsOf = p => ((p && p.langs) || []).map(c => labOf(c).split(" ")[0]).join("");
+["#pL1", "#pL2", "#pL3"].forEach(s => { $(s).innerHTML = '<option value="">—</option>' + LANGS.filter(l => l[0] !== "any").map(([k, n]) => `<option value="${k}">${n}</option>`).join(""); });
 const GENDERS = ["Male", "Female", "Non-binary", "Other"];
 // Everything a stranger sends is cleaned here before it is shown. Photos must be small JPEGs.
 function cleanProfile(p) {
@@ -742,11 +755,12 @@ function cleanProfile(p) {
   const one = (v, n) => typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, n) : "", age = Math.round(+p.age);
   return {
     name: one(p.name, 30), age: age >= 18 && age <= 99 ? age : "", gender: GENDERS.includes(p.gender) ? p.gender : "",
+    langs: Array.isArray(p.langs) ? [...new Set(p.langs.filter(c => typeof c === "string" && c !== "any" && LANGS.some(l => l[0] === c)))].slice(0, 3) : [],
     bio: typeof p.bio === "string" ? p.bio.replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, "").trim().slice(0, 500) : "",
     pic: typeof p.pic === "string" && p.pic.length < 20000 && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(p.pic) ? p.pic : ""
   };
 }
-const hasProf = p => !!(p.name || p.age || p.gender || p.bio || p.pic);
+const hasProf = p => !!(p.name || p.age || p.gender || p.bio || p.pic || (p.langs && p.langs.length));
 function sendProfile(force) {
   const p = cleanProfile(settings.prof);
   if (S && (force || hasProf(p))) peerSend({ t: "profile", p });
@@ -757,7 +771,7 @@ function renderPeer() {
   renderTags(); $("#peerinfo").hidden = !has; if (!has) return;
   $("#peerAv").hidden = !p.pic; if (p.pic) $("#peerAv").src = p.pic;
   $("#peerName").textContent = p.name || "Stranger";
-  $("#peerMeta").textContent = [p.age, p.gender].filter(Boolean).join(" · ");
+  $("#peerMeta").textContent = [p.age, p.gender, ...(p.langs || []).map(labOf)].filter(Boolean).join(" · ");
   $("#peerBio").textContent = p.bio;
 }
 let draftPic = "";
@@ -765,6 +779,7 @@ function showDraft() { $("#pAv").hidden = !draftPic; $("#pAvT").hidden = !!draft
 $("#profbtn").onclick = () => {
   const p = cleanProfile(settings.prof);
   $("#pName").value = p.name; $("#pAge").value = p.age; $("#pGen").value = p.gender; $("#pBio").value = p.bio;
+  [1, 2, 3].forEach(i => { $("#pL" + i).value = (p.langs || [])[i - 1] || ""; });
   $("#pCnt").textContent = p.bio.length + " / 500"; draftPic = p.pic; showDraft(); $("#prof").hidden = false;
 };
 $("#pBio").oninput = e => { $("#pCnt").textContent = e.target.value.length + " / 500"; };
@@ -783,7 +798,7 @@ $("#pFile").onchange = e => {
 };
 $("#pCancel").onclick = () => { $("#prof").hidden = true; };
 $("#pSave").onclick = () => {
-  settings.prof = cleanProfile({ name: $("#pName").value, age: $("#pAge").value, gender: $("#pGen").value, bio: $("#pBio").value, pic: draftPic });
+  settings.prof = cleanProfile({ name: $("#pName").value, age: $("#pAge").value, gender: $("#pGen").value, bio: $("#pBio").value, pic: draftPic, langs: [1, 2, 3].map(i => $("#pL" + i).value) });
   save(); $("#prof").hidden = true; refreshLocal(); sendProfile(true); renderGate();
 };
 
@@ -834,6 +849,7 @@ function renderGo() {
 function disarm() { armed = 0; clearTimeout(armTimer); renderGo(); }
 addEventListener("keydown", e => {
   if (e.key !== "Escape" || e.repeat) return;
+  if (menuKind) { closeMenu(); return; }
   if (!$("#prof").hidden) { $("#prof").hidden = true; return; }
   if (!$("#gate").hidden) return;
   if (!$("#prof").hidden) { $("#prof").hidden = true; return; }
@@ -856,40 +872,49 @@ $("#mic").onclick = () => setMic(!local.a);
 $("#q").innerHTML = Object.entries(QUALITY).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("");
 $("#q").value = settings.q;
 $("#q").onchange = e => setQuality(e.target.value);
-// Mic mode: Full = raw mic (default), Clear = browser noise suppression, echo cancellation and auto-gain.
-$("#mq").innerHTML = '<option value="raw">Mic: Full (unfiltered)</option><option value="clean">Mic: Clear (noise filter)</option>';
-$("#mq").value = settings.clean ? "clean" : "raw";
-$("#mq").onchange = async e => {
-  settings.clean = e.target.value === "clean"; save();
-  if (local.a) { local.a.stop(); local.a = await acquire("audio"); refreshLocal(); await syncSenders(); sendState(); }
-};
-// Camera and microphone pickers: every device the browser can see. Names only appear after permission is granted.
+// Device menus: the little arrow on Cam / Mic opens a list of devices (the mic one also has Full / Clear sound).
+let DEVS = { videoinput: [], audioinput: [] }, menuKind = null;
 async function listDevices() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
-  let ds = []; try { ds = await navigator.mediaDevices.enumerateDevices(); } catch { return; }
-  const fill = (sel, kind, id, label) => {
-    const list = ds.filter(d => d.kind === kind && d.deviceId && d.deviceId !== "default" && d.deviceId !== "communications");
-    sel.textContent = "";
-    const add = (v, t) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); };
-    add("", label + ": default");
-    list.forEach((d, i) => add(d.deviceId, d.label || label + " " + (i + 1)));
-    sel.value = list.some(d => d.deviceId === id) ? id : "";
-  };
-  fill($("#camSel"), "videoinput", settings.camId, "Camera");
-  fill($("#micSel"), "audioinput", settings.micId, "Microphone");
+  try {
+    const ds = await navigator.mediaDevices.enumerateDevices();
+    for (const k in DEVS) DEVS[k] = ds.filter(d => d.kind === k && d.deviceId && d.deviceId !== "default" && d.deviceId !== "communications");
+  } catch {}
 }
-$("#camSel").onchange = async e => {
-  settings.camId = e.target.value; save();
-  if (local.v) { local.v.stop(); local.v = await acquire("video"); refreshLocal(); await syncSenders(); sendState(); }
-};
-$("#micSel").onchange = async e => {
-  settings.micId = e.target.value; save();
+async function useDevice(kind, id) {
+  if (kind === "video") { settings.camId = id; save(); if (local.v) { local.v.stop(); local.v = await acquire("video"); } }
+  else { settings.micId = id; save(); if (local.a) { local.a.stop(); local.a = await acquire("audio"); } }
+  refreshLocal(); await syncSenders(); sendState();
+}
+async function setClean(on) {
+  settings.clean = on; save();
   if (local.a) { local.a.stop(); local.a = await acquire("audio"); refreshLocal(); await syncSenders(); sendState(); }
-};
+}
+function closeMenu() { $("#devmenu").hidden = true; menuKind = null; }
+async function openMenu(kind, anchor) {
+  if (menuKind === kind) { closeMenu(); return; }
+  await listDevices();
+  const m = $("#devmenu"); m.textContent = "";
+  const head = t => { const h = document.createElement("h4"); h.textContent = t; m.appendChild(h); };
+  const item = (t, sel, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.classList.toggle("sel", !!sel); b.onclick = () => { closeMenu(); fn(); }; m.appendChild(b); };
+  const vid = kind === "video", cur = vid ? settings.camId : settings.micId, list = DEVS[vid ? "videoinput" : "audioinput"];
+  head(vid ? "Camera" : "Microphone");
+  item("Default", !cur || !list.some(d => d.deviceId === cur), () => useDevice(kind, ""));
+  list.forEach((d, i) => item(d.label || (vid ? "Camera " : "Microphone ") + (i + 1), d.deviceId === cur, () => useDevice(kind, d.deviceId)));
+  if (!vid) { head("Sound"); item("Full (unfiltered)", !settings.clean, () => setClean(false)); item("Clear (noise filter)", settings.clean, () => setClean(true)); }
+  m.hidden = false; menuKind = kind;
+  const r = anchor.getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(r.left, innerWidth - m.offsetWidth - 8)) + "px";
+  let top = r.top - m.offsetHeight - 6; if (top < 8) top = r.bottom + 6;
+  m.style.top = top + "px";
+}
+$("#camdd").onclick = () => openMenu("video", $("#camsplit"));
+$("#micdd").onclick = () => openMenu("audio", $("#micsplit"));
+addEventListener("pointerdown", e => { if (menuKind && !e.target.closest("#devmenu, .dd")) closeMenu(); });
 try { navigator.mediaDevices.addEventListener("devicechange", listDevices); } catch {}
 listDevices();
 // Language filter: you are only matched with people who picked the same language, or "Any".
-const LANGS = [["en", "English"], ["es", "Español"], ["fr", "Français"], ["de", "Deutsch"], ["pt", "Português"], ["it", "Italiano"], ["ru", "Русский"], ["tr", "Türkçe"], ["ar", "العربية"], ["hi", "हिन्दी"], ["zh", "中文"], ["ja", "日本語"], ["ko", "한국어"], ["any", "Any language"]];
+// (LANGS, with flags, is defined with the profile code above.)
 if (!LANGS.some(l => l[0] === settings.lang)) settings.lang = "en";
 $("#lang").innerHTML = LANGS.map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
 $("#lang").value = settings.lang;
