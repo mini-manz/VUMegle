@@ -67,7 +67,7 @@ button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;s
 @media(max-width:560px){.rules{grid-template-columns:1fr}}
 #onlinechip{display:flex;align-items:center;gap:6px;background:#0f131b;border:1px solid var(--line);border-radius:4px;padding:5px 10px;font-size:13px;color:var(--mut)}#onlinechip b{color:var(--fg)}
 .dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 8px #3ddc84}
-#stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:8px;width:min(460px,92%);margin:20px auto 0}#stats[hidden]{display:none}
+#stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;width:min(440px,92%);margin:20px auto 0}#stats[hidden]{display:none}
 #stats div{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:6px 8px;text-align:center}#stats b{display:block;font-size:18px}#stats span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
 .ov{white-space:pre-line}
 .ov img{width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 12px;border:2px solid var(--line)}#lOv img{width:44px;height:44px;margin-bottom:0}
@@ -113,7 +113,23 @@ main{gap:10px;padding:6px 12px 12px}
 #gprof img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none}
 #gprof .gt{flex:1;min-width:0}#gprof b{display:block}#gprof span{color:var(--mut);font-size:13px}
 #gprof button{flex:none;border-radius:6px}
+/* ---- name + mic tags, icons, device row ---- */
+.tag{position:absolute;left:10px;bottom:8px;z-index:5;display:flex;align-items:center;gap:6px;max-width:80%;padding:3px 9px 3px 7px;border-radius:14px;background:rgba(0,0,0,.6);font-size:13px;font-weight:600;color:#fff;pointer-events:none;white-space:nowrap}
+.tag:empty{display:none}.tag span{overflow:hidden;text-overflow:ellipsis}
+.tag svg{width:15px;height:15px;flex:none;color:#3ddc84}.tag.moff svg{color:#ff5c5c}
+#pip .tag{left:6px;bottom:6px}
+.ifill{fill:currentColor!important;stroke:none!important}
+#cam:not(.off) svg,#mic:not(.off) svg{color:#3ddc84}
+.devs select{flex:1 1 0;min-width:0;text-overflow:ellipsis}
+.credit{margin:14px 0 0;font-size:11px;color:var(--mut);text-align:center}.credit a{color:inherit}
 </style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<!-- Icon credits: Microphone slash (Phosphor Icons, MIT, svgrepo.com/svg/362870); Microphone (CFPB design system, public domain, svgrepo.com/svg/438679); Camera and Camera slash (Dazzle UI, CC Attribution, svgrepo.com/svg/533059 and /533064, https://dazzleui.gumroad.com/l/dazzleiconsfree) -->
+<symbol id="i-micoff" viewBox="0 0 256 256"><path d="M56.87891,31.92773A11.99986,11.99986,0,0,0,39.12109,48.07227L76,88.639V120a52.01259,52.01259,0,0,0,72.11035,47.96021L159.374,180.35059A67.33352,67.33352,0,0,1,128,188a68.07728,68.07728,0,0,1-68-68,12,12,0,0,0-24,0,92.13808,92.13808,0,0,0,80,91.21753V232a12,12,0,0,0,24,0V211.19922a92.52241,92.52241,0,0,0,35.90625-12.66309l23.21484,25.53614a11.99986,11.99986,0,0,0,17.75782-16.14454ZM128,148a28.03146,28.03146,0,0,1-28-28v-4.96094l29.8999,32.8899C129.26953,147.97119,128.63672,148,128,148ZM90.67383,45.26465a11.99874,11.99874,0,0,1-.48438-16.96289A52,52,0,0,1,180,64v48.53516a12,12,0,1,1-24,0V64a28.03146,28.03146,0,0,0-28-28,27.75145,27.75145,0,0,0-20.36328,8.78027A11.99884,11.99884,0,0,1,90.67383,45.26465ZM191.0293,145.57812A67.64212,67.64212,0,0,0,196,120a12,12,0,0,1,24,0,91.51346,91.51346,0,0,1-6.73633,34.61133,11.99965,11.99965,0,0,1-22.23437-9.03321Z"/></symbol>
+<symbol id="i-mic" viewBox="-3 0 19 19"><path d="M11.665 7.915v1.31a5.257 5.257 0 0 1-1.514 3.694 5.174 5.174 0 0 1-1.641 1.126 5.04 5.04 0 0 1-1.456.384v1.899h2.312a.554.554 0 0 1 0 1.108H3.634a.554.554 0 0 1 0-1.108h2.312v-1.899a5.045 5.045 0 0 1-1.456-.384 5.174 5.174 0 0 1-1.641-1.126 5.257 5.257 0 0 1-1.514-3.695v-1.31a.554.554 0 1 1 1.109 0v1.31a4.131 4.131 0 0 0 1.195 2.917 3.989 3.989 0 0 0 5.722 0 4.133 4.133 0 0 0 1.195-2.917v-1.31a.554.554 0 1 1 1.109 0zM3.77 10.37a2.875 2.875 0 0 1-.233-1.146V4.738A2.905 2.905 0 0 1 3.77 3.58a3 3 0 0 1 1.59-1.59 2.902 2.902 0 0 1 1.158-.233 2.865 2.865 0 0 1 1.152.233 2.977 2.977 0 0 1 1.793 2.748l-.012 4.487a2.958 2.958 0 0 1-.856 2.09 3.025 3.025 0 0 1-.937.634 2.865 2.865 0 0 1-1.152.233 2.905 2.905 0 0 1-1.158-.233A2.957 2.957 0 0 1 3.77 10.37z"/></symbol>
+<symbol id="i-cam" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16C13.6569 16 15 14.6569 15 13C15 11.3431 13.6569 10 12 10C10.3431 10 9 11.3431 9 13C9 14.6569 10.3431 16 12 16Z"/><path d="M3 16.8V9.2C3 8.0799 3 7.51984 3.21799 7.09202C3.40973 6.71569 3.71569 6.40973 4.09202 6.21799C4.51984 6 5.0799 6 6.2 6H7.25464C7.37758 6 7.43905 6 7.49576 5.9935C7.79166 5.95961 8.05705 5.79559 8.21969 5.54609C8.25086 5.49827 8.27836 5.44328 8.33333 5.33333C8.44329 5.11342 8.49827 5.00346 8.56062 4.90782C8.8859 4.40882 9.41668 4.08078 10.0085 4.01299C10.1219 4 10.2448 4 10.4907 4H13.5093C13.7552 4 13.8781 4 13.9915 4.01299C14.5833 4.08078 15.1141 4.40882 15.4394 4.90782C15.5017 5.00345 15.5567 5.11345 15.6667 5.33333C15.7216 5.44329 15.7491 5.49827 15.7803 5.54609C15.943 5.79559 16.2083 5.95961 16.5042 5.9935C16.561 6 16.6224 6 16.7454 6H17.8C18.9201 6 19.4802 6 19.908 6.21799C20.2843 6.40973 20.5903 6.71569 20.782 7.09202C21 7.51984 21 8.0799 21 9.2V16.8C21 17.9201 21 18.4802 20.782 18.908C20.5903 19.2843 20.2843 19.5903 19.908 19.782C19.4802 20 18.9201 20 17.8 20H6.2C5.0799 20 4.51984 20 4.09202 19.782C3.71569 19.5903 3.40973 19.2843 3.21799 18.908C3 18.4802 3 17.9201 3 16.8Z"/></g></symbol>
+<symbol id="i-camoff" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3L6.00007 6.00007M21 21L19.8455 19.8221M9.74194 4.06811C9.83646 4.04279 9.93334 4.02428 10.0319 4.01299C10.1453 4 10.2683 4 10.5141 4H13.5327C13.7786 4 13.9015 4 14.015 4.01299C14.6068 4.08078 15.1375 4.40882 15.4628 4.90782C15.5252 5.00345 15.5802 5.11345 15.6901 5.33333C15.7451 5.44329 15.7726 5.49827 15.8037 5.54609C15.9664 5.79559 16.2318 5.95961 16.5277 5.9935C16.5844 6 16.6459 6 16.7688 6H17.8234C18.9435 6 19.5036 6 19.9314 6.21799C20.3077 6.40973 20.6137 6.71569 20.8055 7.09202C21.0234 7.51984 21.0234 8.0799 21.0234 9.2V15.3496M19.8455 19.8221C19.4278 20 18.8702 20 17.8234 20H6.22344C5.10333 20 4.54328 20 4.11546 19.782C3.73913 19.5903 3.43317 19.2843 3.24142 18.908C3.02344 18.4802 3.02344 17.9201 3.02344 16.8V9.2C3.02344 8.0799 3.02344 7.51984 3.24142 7.09202C3.43317 6.71569 3.73913 6.40973 4.11546 6.21799C4.51385 6.015 5.0269 6.00103 6.00007 6.00007M19.8455 19.8221L14.5619 14.5619M14.5619 14.5619C14.0349 15.4243 13.0847 16 12 16C10.3431 16 9 14.6569 9 13C9 11.9153 9.57566 10.9651 10.4381 10.4381M14.5619 14.5619L10.4381 10.4381M10.4381 10.4381L6.00007 6.00007"/></g></symbol>
+</svg>
 <div id="gate"><div class="box">
  <h1><i class="logo"></i>Welcome to VUMegle</h1>
  <p class="sub">Meet random people over live video, audio and text. Press Start, say hi, and press Next whenever you want someone new. You may see or hear things that are inappropriate or upsetting.</p>
@@ -135,6 +151,7 @@ main{gap:10px;padding:6px 12px 12px}
  <label><input type="checkbox" id="ok18"> I'm 18 or older and I agree to the rules</label>
  <label class="soft"><input type="checkbox" id="hide"> Don't show this welcome page again</label>
  <button id="enter" class="pri" disabled>Enter VUMegle</button>
+ <p class="credit">Icons: camera by <a href="https://dazzleui.gumroad.com/l/dazzleiconsfree" target="_blank" rel="noopener">Dazzle UI</a> (CC BY), microphone slash by <a href="https://github.com/phosphor-icons/phosphor-icons" target="_blank" rel="noopener">Phosphor Icons</a> (MIT), microphone by <a href="https://github.com/cfpb/design-system" target="_blank" rel="noopener">CFPB</a> (public domain).</p>
 </div></div>
 
 <header><b><i class="logo"></i>VUMegle</b><span id="onlinechip" title="People on the site right now"><i class="dot"></i><b id="onl">–</b>&nbsp;online</span><span id="status">Connecting to server…</span><button id="profbtn">Profile</button><button id="rules">Rules</button></header>
@@ -154,11 +171,11 @@ main{gap:10px;padding:6px 12px 12px}
   <div class="stage">
    <video id="remote" autoplay playsinline></video>
    <img id="rimg" alt="" hidden>
-   <div class="ov" id="rOv"><img id="rAv" alt="" hidden><span id="rTx">Press Start to meet someone</span><div id="stats" title="Visitors who opened the site. A browser is counted once per 30 minutes; all-time counts each browser once."><div><b id="ssr">–</b><span>searching now</span></div><div><b id="s1">–</b><span>last hour</span></div><div><b id="s6">–</b><span>last 6 hours</span></div><div><b id="s24">–</b><span>last 24 hours</span></div><div><b id="sall">–</b><span>all time</span></div></div></div>
+   <div class="ov" id="rOv"><img id="rAv" alt="" hidden><span id="rTx">Press Start to meet someone</span><div id="stats" title="Visitors who opened the site. A browser is counted once per 30 minutes; all-time counts each browser once."><div><b id="ssr">–</b><span>searching now</span></div><div><b id="sic">–</b><span>in call</span></div><div><b id="s1">–</b><span>last hour</span></div><div><b id="s6">–</b><span>last 6 hours</span></div><div><b id="s24">–</b><span>last 24 hours</span></div><div><b id="sall">–</b><span>all time</span></div></div></div>
    <button id="rep" disabled title="Report this person"><svg viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg></button>
-   <div id="rname"></div>
+   <div id="rname" class="tag"></div>
   </div>
-  <div id="localBox"><div id="pip" class="docked"><video id="local" autoplay muted playsinline></video><div class="ov" id="lOv"><img id="lAv" alt="" hidden><span id="lTx">Camera Off</span></div></div></div>
+  <div id="localBox"><div id="pip" class="docked"><video id="local" autoplay muted playsinline></video><div class="ov" id="lOv"><img id="lAv" alt="" hidden><span id="lTx">Camera Off</span></div><div id="lname" class="tag"></div></div></div>
   <div id="selfpop" hidden><label><input type="checkbox" id="pshow"> Show my camera</label><label><input type="checkbox" id="pfloat"> Float over the video (drag it)</label><label>Opacity <input type="range" id="pop" min="15" max="100"></label><button id="preset">Reset position</button></div>
  </section>
  <section class="side">
@@ -172,7 +189,13 @@ main{gap:10px;padding:6px 12px 12px}
    <button id="mic">Mic</button>
    <button id="self" title="Move, hide or fade your own camera"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><rect x="12" y="12" width="6" height="5" rx="1"/></svg>Self view</button>
    <select id="q" title="Camera quality"></select>
+   
    <select id="lang" title="You will only be matched with people who picked the same language (or Any)"></select>
+  </div>
+  <div class="bar devs">
+   <select id="camSel" title="Choose your camera"></select>
+   <select id="micSel" title="Choose your microphone"></select>
+   <select id="mq" title="Full = your raw mic, nothing filtered (best with headphones). Clear = browser noise filter + echo cancel."></select>
   </div>
   <div class="bottom">
    <button id="go" class="pri" disabled title="Shortcut: Esc"></button>
@@ -230,10 +253,23 @@ const readLS = k => { try { return localStorage.getItem(k); } catch { return nul
 const writeLS = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
 
 // Remembered between visits: cam on/off, mic on/off, camera quality, 18+ confirmation.
-const settings = Object.assign({ cam: true, mic: true, q: "720", age: false, hide: false, pipShow: true, pipOp: 100, px: 1, py: 1, prof: {}, lang: "en", pipFloat: false }, (() => { try { return JSON.parse(readLS("omg_settings")) || {}; } catch { return {}; } })());
+const settings = Object.assign({ cam: true, mic: true, q: "720", age: false, hide: false, pipShow: true, pipOp: 100, px: 1, py: 1, prof: {}, lang: "en", pipFloat: false, clean: false, camId: "", micId: "" }, (() => { try { return JSON.parse(readLS("omg_settings")) || {}; } catch { return {}; } })());
 if (!QUALITY[settings.q]) settings.q = "720";
 const save = () => writeLS("omg_settings", JSON.stringify(settings));
 const ic = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+// Icons from the sprite at the top of <body>. fill=true for the solid mic icons.
+const iu = (n, fill) => `<svg class="${fill ? "ifill" : "istroke"}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+// Name + mic status tags on each video: green mic = on, red slashed mic = off.
+function setTag(el, name, mic) {
+  el.textContent = ""; if (name == null) return;
+  el.insertAdjacentHTML("beforeend", iu(mic ? "mic" : "micoff", 1));
+  const s = document.createElement("span"); s.textContent = name; el.appendChild(s); el.classList.toggle("moff", !mic);
+}
+function renderTags() {
+  const p = S && S.profile, on = !!S && mode === "connected";
+  setTag($("#rname"), on ? (p && p.name) || "Stranger" : null, !!(S && S.remoteState && S.remoteState.mic));
+  setTag($("#lname"), (settings.prof && settings.prof.name) || "You", !!local.a);
+}
 const ICON = {
   mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
   cam: '<rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3z"/>',
@@ -245,7 +281,7 @@ const ICON = {
 
 let uid = null, mode = "idle", S = null, lastPeer = null, lastSend = 0;
 let local = { v: null, a: null }, blocked = { cam: false, mic: false };
-let searchGen = 0, claiming = false, qUnsubs = [], hb = null;
+let searchGen = 0, claiming = false, qUnsubs = [], hb = null, callOn = false;
 
 /* ---------------- UI helpers ---------------- */
 const say = t => { $("#status").textContent = t; };
@@ -264,11 +300,12 @@ function refreshRemote() {
   else if (!S || !S.remoteState.cam) t = "Camera Off";
   const pic = S && S.profile && S.profile.pic && mode === "connected" && !S.remoteState.cam ? S.profile.pic : "";
   $("#rTx").textContent = t; $("#rAv").hidden = !pic; if (pic) $("#rAv").src = pic; $("#rOv").hidden = !t;
-  $("#stats").hidden = !(mode === "idle" || mode === "searching");
+  $("#stats").hidden = !(mode === "idle" || mode === "searching"); renderTags();
 }
 function setMode(m) {
   mode = m;
   disarm();
+  if ((m === "connected") !== callOn) { callOn = m === "connected"; if (uid && SHOW_STATS) ping(); }
   $("#rep").disabled = !(m === "connected" || (m === "ended" && lastPeer));
   $("#msg").disabled = $("#send").disabled = m !== "connected";
   refreshRemote(); renderPeer();
@@ -279,9 +316,9 @@ function refreshLocal() {
   $("#lOv").hidden = !!local.v; $("#lTx").textContent = blocked.cam ? "Camera blocked" : "Camera Off";
   const lp = (settings.prof && settings.prof.pic) || ""; $("#lAv").hidden = !lp; $("#lTx").hidden = !!lp; if (lp) $("#lAv").src = lp;
   watchLocal();
-  const c = $("#cam"), m = $("#mic");
-  c.innerHTML = ic(ICON.cam + (local.v ? "" : ICON.off)) + (local.v ? "Cam on" : blocked.cam ? "Cam blocked" : "Cam off"); c.classList.toggle("off", !local.v);
-  m.innerHTML = ic(ICON.mic + (local.a ? "" : ICON.off)) + (local.a ? "Mic on" : blocked.mic ? "Mic blocked" : "Mic off"); m.classList.toggle("off", !local.a);
+  renderTags(); const c = $("#cam"), m = $("#mic");
+  c.innerHTML = iu(local.v ? "cam" : "camoff", 0) + (local.v ? "Cam on" : blocked.cam ? "Cam blocked" : "Cam off"); c.classList.toggle("off", !local.v);
+  m.innerHTML = iu(local.a ? "mic" : "micoff", 1) + (local.a ? "Mic on" : blocked.mic ? "Mic blocked" : "Mic off"); m.classList.toggle("off", !local.a);
 }
 
 /* ---------------- camera + mic ---------------- */
@@ -290,8 +327,10 @@ async function acquire(kind) {
   try {
     const q = QUALITY[settings.q];
     const st = await navigator.mediaDevices.getUserMedia(kind === "video"
-      ? { video: { width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.fps }, resizeMode: "crop-and-scale" } }
-      : { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      ? { video: { ...(settings.camId ? { deviceId: { ideal: settings.camId } } : {}), width: { ideal: q.w }, height: { ideal: q.h }, frameRate: { ideal: q.fps }, resizeMode: "crop-and-scale" } }
+      : { audio: { ...(settings.micId ? { deviceId: { ideal: settings.micId } } : {}), ...(settings.clean
+        ? { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+        : { echoCancellation: false, noiseSuppression: false, autoGainControl: false, voiceIsolation: false, channelCount: { ideal: 2 }, sampleRate: { ideal: 48000 } }) } });
     blocked[key] = false;
     return (kind === "video" ? st.getVideoTracks() : st.getAudioTracks())[0] || null;
   } catch { blocked[key] = true; return null; }
@@ -305,7 +344,7 @@ async function initMedia() {
   if (settings.cam) local.v = v; else if (v) v.stop();
   if (settings.mic) local.a = a; else if (a) a.stop();
   refreshLocal();
-  if (blocked.cam || blocked.mic) say("Camera/mic not allowed. You can still text chat. To change this, use the lock icon in the address bar.");
+  listDevices(); if (blocked.cam || blocked.mic) say("Camera/mic not allowed. You can still text chat. To change this, use the lock icon in the address bar.");
 }
 async function setCam(on) {
   settings.cam = on; save();
@@ -323,6 +362,11 @@ async function setQuality(k) {
   settings.q = k; save();
   if (local.v) { local.v.stop(); local.v = await acquire("video"); refreshLocal(); }
   await syncSenders();
+}
+// Opus defaults to ~32 kbps mono voice. Ask for high-bitrate stereo with no silence skipping, so the full mic comes through.
+function hqAudio(sdp) {
+  const m = /a=rtpmap:(\d+) opus\/48000\/2/i.exec(sdp); if (!m) return sdp;
+  return sdp.replace(new RegExp("a=fmtp:" + m[1] + " ([^\\r\\n]*)"), (l, p) => "a=fmtp:" + m[1] + " " + p.replace(/;?(stereo|sprop-stereo|maxaveragebitrate|usedtx|cbr)=\d+/g, "") + ";stereo=1;sprop-stereo=1;maxaveragebitrate=128000;usedtx=0");
 }
 function bindSenders() {
   for (const t of S.pc.getTransceivers()) {
@@ -446,7 +490,7 @@ async function joinRoom(roomId, role, gen) {
       s.dc = pc.createDataChannel("chat"); wireDC(s, s.dc);
       pc.addTransceiver("video", { direction: "sendrecv" }); pc.addTransceiver("audio", { direction: "sendrecv" });
       bindSenders(); await attachLocal();
-      const off = await pc.createOffer(); await pc.setLocalDescription(off);
+      const off0 = await pc.createOffer(), off = { type: off0.type, sdp: hqAudio(off0.sdp) }; await pc.setLocalDescription(off);
       await s.send("offer", { type: off.type, sdp: off.sdp });
     } else {
       pc.ondatachannel = e => { s.dc = e.channel; wireDC(s, e.channel); };
@@ -462,7 +506,7 @@ function handleSignal(s, kind, data) {
       await pc.setRemoteDescription(data);
       for (const t of pc.getTransceivers()) { try { t.direction = "sendrecv"; } catch {} }
       bindSenders(); await attachLocal();
-      const ans = await pc.createAnswer(); await pc.setLocalDescription(ans);
+      const ans0 = await pc.createAnswer(), ans = { type: ans0.type, sdp: hqAudio(ans0.sdp) }; await pc.setLocalDescription(ans);
       await s.send("answer", { type: ans.type, sdp: ans.sdp });
       await flushIce(s);
     } else if (kind === "answer" && s.role === "b") {
@@ -650,13 +694,13 @@ function relayStop(s) {
 // Firestore write per PRESENCE_EVERY, so raise these if you ever near the free daily limits.
 // Set SHOW_STATS = false to switch all of this off.
 const SHOW_STATS = true, PRESENCE_EVERY = 4 * 60000, PRESENCE_WINDOW = 10 * 60000, STATS_EVERY = 2 * 60000, BUCKET = 600000;
-let online = null, searching = null, stat = null, presenceOn = false, lastPing = 0, lastPoll = 0;
+let online = null, searching = null, incall = null, stat = null, presenceOn = false, lastPing = 0, lastPoll = 0;
 function onlineLine() { return online > 1 ? "\n" + online + " online now" : ""; }
 const nf = n => n == null ? "–" : n.toLocaleString();
 const sumSince = (h, ms) => { let n = 0; for (const k in h) if ((+k + 1) * BUCKET > Date.now() - ms) n += h[k]; return n; };
 function showStats() {
   const h = (stat && stat.h) || {}, set = (id, v) => { $(id).textContent = nf(v); };
-  set("#onl", online); set("#ssr", searching); set("#sall", stat && stat.total);
+  set("#onl", online); set("#ssr", searching); set("#sic", incall); set("#sall", stat && stat.total);
   set("#s1", stat && sumSince(h, 36e5)); set("#s6", stat && sumSince(h, 6 * 36e5)); set("#s24", stat && sumSince(h, 24 * 36e5));
   if (mode === "idle" || mode === "searching") refreshRemote();
 }
@@ -665,10 +709,11 @@ async function pollStats() {
   lastPoll = Date.now();
   try { online = (await getCountFromServer(query(collection(db, "presence"), where("ts", ">", Timestamp.fromMillis(Date.now() - PRESENCE_WINDOW))))).data().count; } catch {}
   try { searching = (await getCountFromServer(query(collection(db, "queue"), where("ts", ">", Timestamp.fromMillis(Date.now() - 60000))))).data().count; } catch {}
+  try { incall = (await getCountFromServer(query(collection(db, "presence"), where("callTs", ">", Timestamp.fromMillis(Date.now() - 6 * 60000))))).data().count; } catch {}
   try { stat = (await getDoc(doc(db, "stats", "main"))).data() || stat; } catch {}
   showStats();
 }
-const ping = () => { lastPing = Date.now(); return setDoc(doc(db, "presence", uid), { ts: serverTimestamp(), exp: hoursFromNow(1) }).catch(() => {}); };
+const ping = () => { lastPing = Date.now(); return setDoc(doc(db, "presence", uid), { ts: serverTimestamp(), exp: hoursFromNow(1), ...(mode === "connected" ? { callTs: serverTimestamp() } : {}) }).catch(() => {}); };
 // Counts this visit: all-time once per browser, and the hourly buckets once per 30 minutes.
 async function countMe() {
   const now = Date.now(), b = Math.floor(now / BUCKET), isNew = readLS("omg_seen") !== uid, fresh = now - (+readLS("omg_lastvisit") || 0) > 30 * 60000;
@@ -709,7 +754,7 @@ function sendProfile(force) {
 function setPeerProfile(s, p) { if (S !== s) return; s.profile = cleanProfile(p); renderPeer(); refreshRemote(); }
 function renderPeer() {
   const p = S && S.profile, has = !!p && hasProf(p);
-  $("#rname").textContent = has && p.name ? p.name : ""; $("#peerinfo").hidden = !has; if (!has) return;
+  renderTags(); $("#peerinfo").hidden = !has; if (!has) return;
   $("#peerAv").hidden = !p.pic; if (p.pic) $("#peerAv").src = p.pic;
   $("#peerName").textContent = p.name || "Stranger";
   $("#peerMeta").textContent = [p.age, p.gender].filter(Boolean).join(" · ");
@@ -811,6 +856,38 @@ $("#mic").onclick = () => setMic(!local.a);
 $("#q").innerHTML = Object.entries(QUALITY).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("");
 $("#q").value = settings.q;
 $("#q").onchange = e => setQuality(e.target.value);
+// Mic mode: Full = raw mic (default), Clear = browser noise suppression, echo cancellation and auto-gain.
+$("#mq").innerHTML = '<option value="raw">Mic: Full (unfiltered)</option><option value="clean">Mic: Clear (noise filter)</option>';
+$("#mq").value = settings.clean ? "clean" : "raw";
+$("#mq").onchange = async e => {
+  settings.clean = e.target.value === "clean"; save();
+  if (local.a) { local.a.stop(); local.a = await acquire("audio"); refreshLocal(); await syncSenders(); sendState(); }
+};
+// Camera and microphone pickers: every device the browser can see. Names only appear after permission is granted.
+async function listDevices() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+  let ds = []; try { ds = await navigator.mediaDevices.enumerateDevices(); } catch { return; }
+  const fill = (sel, kind, id, label) => {
+    const list = ds.filter(d => d.kind === kind && d.deviceId && d.deviceId !== "default" && d.deviceId !== "communications");
+    sel.textContent = "";
+    const add = (v, t) => { const o = document.createElement("option"); o.value = v; o.textContent = t; sel.appendChild(o); };
+    add("", label + ": default");
+    list.forEach((d, i) => add(d.deviceId, d.label || label + " " + (i + 1)));
+    sel.value = list.some(d => d.deviceId === id) ? id : "";
+  };
+  fill($("#camSel"), "videoinput", settings.camId, "Camera");
+  fill($("#micSel"), "audioinput", settings.micId, "Microphone");
+}
+$("#camSel").onchange = async e => {
+  settings.camId = e.target.value; save();
+  if (local.v) { local.v.stop(); local.v = await acquire("video"); refreshLocal(); await syncSenders(); sendState(); }
+};
+$("#micSel").onchange = async e => {
+  settings.micId = e.target.value; save();
+  if (local.a) { local.a.stop(); local.a = await acquire("audio"); refreshLocal(); await syncSenders(); sendState(); }
+};
+try { navigator.mediaDevices.addEventListener("devicechange", listDevices); } catch {}
+listDevices();
 // Language filter: you are only matched with people who picked the same language, or "Any".
 const LANGS = [["en", "English"], ["es", "Español"], ["fr", "Français"], ["de", "Deutsch"], ["pt", "Português"], ["it", "Italiano"], ["ru", "Русский"], ["tr", "Türkçe"], ["ar", "العربية"], ["hi", "हिन्दी"], ["zh", "中文"], ["ja", "日本語"], ["ko", "한국어"], ["any", "Any language"]];
 if (!LANGS.some(l => l[0] === settings.lang)) settings.lang = "en";
