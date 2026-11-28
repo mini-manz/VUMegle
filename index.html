@@ -454,12 +454,25 @@ async function startSearch() {
     const wq = settings.lang === "any"
       ? query(qc, where("status", "==", "waiting"), where("ts", ">", since), limit(25))
       : query(qc, where("status", "==", "waiting"), where("lang", "in", [settings.lang, "any"]), where("ts", ">", since), limit(25));
-    wUn = onSnapshot(wq, snap => {
+    const onDocs = snap => {
       if (gen !== searchGen || claiming || S) return;
       const now = Date.now(), t = d => d.ts ? d.ts.toMillis() : now;
       const c = snap.docs.map(d => d.data()).filter(d => d.uid !== uid && d.uid < uid && now - t(d) < FRESH_MS).sort((x, y) => t(x) - t(y));
       if (c.length) tryClaim(c, gen);
-    }, e => { console.warn("waiting query", e); if (gen === searchGen) say("Matching problem: " + e.message); });
+    };
+    wUn = onSnapshot(wq, onDocs, e => {
+      // The details (including the link that creates a missing index) go to the console only.
+      console.warn("waiting query", e);
+      if (gen !== searchGen) return;
+      if (e && e.code === "failed-precondition") {
+        // Index not built yet: use the plain query (no ts filter) so matching keeps working. The
+        // client-side freshness check still applies, but closed tabs can crowd the 25 slots.
+        const plain = settings.lang === "any"
+          ? query(qc, where("status", "==", "waiting"), limit(25))
+          : query(qc, where("status", "==", "waiting"), where("lang", "in", [settings.lang, "any"]), limit(25));
+        wUn = onSnapshot(plain, onDocs, e2 => console.warn("waiting query (fallback)", e2));
+      } else say("Couldn't look for people right now. Please try again in a moment.");
+    });
   };
   watchWaiting();
   qUnsubs.push(() => { if (wUn) wUn(); wUn = null; });
