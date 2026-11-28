@@ -407,6 +407,24 @@ const sendState = () => peerSend({ t: "state", cam: !!local.v, mic: !!local.a })
 
 /* ---------------- matchmaking (Firestore) ---------------- */
 const dropQueue = () => uid ? deleteDoc(doc(db, "queue", uid)).catch(() => {}) : Promise.resolve();
+// FRESH_MS: how recent a searcher's heartbeat must be to be listed (keep it well above HB_MS).
+// HB_MS: queue heartbeat interval. Each heartbeat is also a read for every other searcher's
+// listener, so a longer interval saves a lot of Spark reads.
+const FRESH_MS = 150000, HB_MS = 60000;
+// ICE candidates go out as one Firestore doc each (10 to 30 per match). With ICE_BATCH they are
+// collected for ICE_BATCH_MS and sent as ONE doc holding an array. Receivers already accept both.
+// Only set ICE_BATCH = true once EVERY hosted copy of index.html has this receiver code: an older
+// copy can't read an array, so calls with it would not connect.
+const ICE_BATCH = true, ICE_BATCH_MS = 400;   // on: every site loads the one GitHub index.html (set false if calls stop connecting)
+// RELAY_KEY: the room doc gets a random `key` and the relay path becomes relay/{key}/{uid} instead
+// of relay/{roomId}/{uid}. Anyone signed in can read a room id from the queue docs; only the two
+// people in the room can read the key. Every copy already READS the key (and falls back to the
+// room id when the room has none). Only set RELAY_KEY = true, which makes the claimer WRITE a key,
+// once EVERY hosted copy has this code: an older copy listens on the room id path and would never
+// see the other side's relay video, audio or chat.
+const RELAY_KEY = true;   // on: same reason as ICE_BATCH (set false if the relay stops working between two people)
+const newKey = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), x => x.toString(16).padStart(2, "0")).join("");
+const goodKey = k => typeof k === "string" && /^[0-9a-f]{32}$/.test(k);   // a bad key from a hostile claimer is ignored
 function stopSearching() { qUnsubs.forEach(u => u()); qUnsubs = []; clearInterval(hb); hb = null; }
 
 async function startSearch() {
@@ -425,16 +443,34 @@ async function startSearch() {
     if (gen === searchGen && d && d.status === "matched" && d.room && !claiming && !S) joinRoom(d.room, "a", gen);
   }, e => say("Connection problem: " + e.message)));
   // Look for someone waiting. Of any two people, the one with the larger id does the claiming.
-  const wq = settings.lang === "any"
-    ? query(collection(db, "queue"), where("status", "==", "waiting"), limit(25))
-    : query(collection(db, "queue"), where("status", "==", "waiting"), where("lang", "in", [settings.lang, "any"]), limit(25));
-  qUnsubs.push(onSnapshot(wq, snap => {
-    if (gen !== searchGen || claiming || S) return;
-    const now = Date.now(), t = d => d.ts ? d.ts.toMillis() : now;
-    const c = snap.docs.map(d => d.data()).filter(d => d.uid !== uid && d.uid < uid && now - t(d) < 50000).sort((x, y) => t(x) - t(y));
-    if (c.length) tryClaim(c, gen);
-  }, () => {}));
-  hb = setInterval(() => updateDoc(myRef, { ts: serverTimestamp() }).catch(() => {}), 20000);
+  // Only docs with a heartbeat newer than FRESH_MS are listed, so people who closed their tab
+  // can't fill the 25 slots. This needs two composite indexes on queue (status+ts and
+  // status+lang+ts): if one is missing, the console error holds a link that creates it.
+  // The cut-off is fixed when a listener starts, so it is rebuilt every 2 heartbeats (~2 min).
+  let wUn = null;
+  const watchWaiting = () => {
+    if (wUn) wUn();
+    const since = Timestamp.fromMillis(Date.now() - FRESH_MS), qc = collection(db, "queue");
+    const wq = settings.lang === "any"
+      ? query(qc, where("status", "==", "waiting"), where("ts", ">", since), limit(25))
+      : query(qc, where("status", "==", "waiting"), where("lang", "in", [settings.lang, "any"]), where("ts", ">", since), limit(25));
+    wUn = onSnapshot(wq, snap => {
+      if (gen !== searchGen || claiming || S) return;
+      const now = Date.now(), t = d => d.ts ? d.ts.toMillis() : now;
+      const c = snap.docs.map(d => d.data()).filter(d => d.uid !== uid && d.uid < uid && now - t(d) < FRESH_MS).sort((x, y) => t(x) - t(y));
+      if (c.length) tryClaim(c, gen);
+    }, e => { console.warn("waiting query", e); if (gen === searchGen) say("Matching problem: " + e.message); });
+  };
+  watchWaiting();
+  qUnsubs.push(() => { if (wUn) wUn(); wUn = null; });
+  // Heartbeat: refresh ts and exp. If the doc has vanished (e.g. the TTL policy removed it),
+  // put it back, so a long search stays visible to others.
+  const beat = () => updateDoc(myRef, { ts: serverTimestamp(), exp: hoursFromNow(1) }).catch(e => {
+    if (e && e.code === "not-found" && gen === searchGen && hb && !S && !claiming)
+      setDoc(myRef, { uid, status: "waiting", lang: settings.lang, room: null, ts: serverTimestamp(), exp: hoursFromNow(1) }).catch(() => {});
+  });
+  let beats = 0;
+  hb = setInterval(() => { beat(); if (++beats % 2 === 0) watchWaiting(); }, HB_MS);
 }
 
 async function tryClaim(cands, gen) {
@@ -447,7 +483,7 @@ async function tryClaim(cands, gen) {
         const [os, ms] = await Promise.all([tx.get(theirRef), tx.get(myRef)]);
         if (!os.exists() || os.data().status !== "waiting" || !ms.exists() || ms.data().status !== "waiting") throw new Error("gone");
         const ol = os.data().lang; if (settings.lang !== "any" && ol !== "any" && ol !== settings.lang) throw new Error("gone");
-        tx.set(roomRef, { users: [o.uid, uid], a: o.uid, b: uid, created: serverTimestamp(), exp: hoursFromNow(3) });
+        tx.set(roomRef, { users: [o.uid, uid], a: o.uid, b: uid, created: serverTimestamp(), exp: hoursFromNow(3), ...(RELAY_KEY ? { key: newKey() } : {}) });
         tx.update(theirRef, { status: "matched", room: roomRef.id });
         tx.update(myRef, { status: "matched", room: roomRef.id });
       });
@@ -474,11 +510,18 @@ async function joinRoom(roomId, role, gen) {
   const sigs = collection(db, "rooms", roomId, "signals");
   s.send = (kind, data) => addDoc(sigs, { from: uid, kind, data: JSON.stringify(data), exp: hoursFromNow(3) });
   getDoc(doc(db, "rooms", roomId)).then(r => {
-    if (r.exists()) s.peer = lastPeer = (r.data().users || []).find(u => u !== uid) || null;
+    if (r.exists()) { s.peer = lastPeer = (r.data().users || []).find(u => u !== uid) || null; s.key = goodKey(r.data().key) ? r.data().key : null; }
     if (S === s) setMode(mode);
   }).catch(() => {});
 
-  pc.onicecandidate = e => { if (e.candidate) s.send("ice", e.candidate.toJSON()).catch(() => {}); };
+  s.iceBuf = [];
+  const flushOut = () => { const b = s.iceBuf.splice(0); if (b.length) s.send("ice", b).catch(() => {}); };
+  pc.onicecandidate = e => {
+    if (!ICE_BATCH) { if (e.candidate) s.send("ice", e.candidate.toJSON()).catch(() => {}); return; }
+    if (!e.candidate) { flushOut(); return; }   // gathering finished: send what is left now
+    s.iceBuf.push(e.candidate.toJSON());
+    if (!s.iceT) s.timers.push(s.iceT = setTimeout(() => { s.iceT = 0; flushOut(); }, ICE_BATCH_MS));
+  };
   pc.ontrack = e => { s.remote.addTrack(e.track); if (e.track.kind === "audio") remoteMeter(s, e.track); const v = $("#remote"); v.srcObject = s.remote; v.play().catch(() => {}); };
   pc.onconnectionstatechange = () => {
     if (S !== s) return;
@@ -488,10 +531,13 @@ async function joinRoom(roomId, role, gen) {
     else if (c === "disconnected") s.timers.push(setTimeout(() => { if (S === s && pc.connectionState !== "connected") peerGone(s, "Stranger disconnected"); }, 6000));
   };
   s.timers.push(setTimeout(() => { if (S === s && !s.connected) p2pFailed(s); }, 20000));
+  // Not a single signal from the other side after 12 s means they already left (a closed tab
+  // that was still in the queue). Search again now instead of waiting for the relay.
+  s.timers.push(setTimeout(() => { if (S === s && !s.connected && !s.heard) { say("Nobody there. Looking for someone else…"); startSearch(); } }, 12000));
 
   s.unsubs.push(onSnapshot(sigs, snap => snap.docChanges().forEach(ch => {
     if (ch.type !== "added") return;
-    const d = ch.doc.data(); if (d.from !== uid) handleSignal(s, d.kind, JSON.parse(d.data));
+    const d = ch.doc.data(); if (d.from !== uid) { s.heard = true; handleSignal(s, d.kind, JSON.parse(d.data)); }
   }), () => {}));
 
   try {
@@ -521,7 +567,9 @@ function handleSignal(s, kind, data) {
     } else if (kind === "answer" && s.role === "b") {
       await pc.setRemoteDescription(data); await flushIce(s);
     } else if (kind === "ice") {
-      if (pc.remoteDescription) { try { await pc.addIceCandidate(data); } catch {} } else s.pending.push(data);
+      for (const c of Array.isArray(data) ? data : [data]) {   // one candidate or a batch (array)
+        if (pc.remoteDescription) { try { await pc.addIceCandidate(c); } catch {} } else s.pending.push(c);
+      }
     }
   }).catch(e => console.warn("signal", e));
 }
@@ -610,7 +658,7 @@ function gone(s, msg) {
   endSession(false); addMsg("sys", msg); say(msg + ". You can keep reading the chat."); setMode("ended");
 }
 function startRelay(s) {
-  const base = "relay/" + s.room + "/", cv = document.createElement("canvas");
+  const base = "relay/" + (s.key || s.room) + "/", cv = document.createElement("canvas");
   const R = s.relay = { mine: ref(rdb, base + uid), timers: [], playAt: 0, buf: [], src: null, proc: null, off: null };
   try { s.pc.close(); } catch {}
   try { s.dc && s.dc.close(); } catch {}
@@ -621,7 +669,12 @@ function startRelay(s) {
     if (S !== s) return;
     const m = snap.val(); if (!m) return;
     s.lastPing = Date.now();
-    if (m.t === "v") { const i = $("#rimg"); i.src = m.d; i.hidden = false; $("#remote").hidden = true; }
+    if (m.t === "v") {
+      // Only a small JPEG data URL is ever shown. Anything else (e.g. an http(s) address) would make
+      // this browser fetch it from the sender's server and reveal your IP address.
+      if (typeof m.d !== "string" || m.d.length > 30000 || !/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(m.d)) return;
+      const i = $("#rimg"); i.src = m.d; i.hidden = false; $("#remote").hidden = true;
+    }
     else if (m.t === "a") relayPlay(s, m.d);
     else if (m.t === "j") {
       let o; try { o = JSON.parse(m.d); } catch { return; }
@@ -678,7 +731,7 @@ function relayMic() {
   R.src = AC.createMediaStreamSource(new MediaStream([local.a])); R.src.connect(R.proc);
 }
 function relayPlay(s, d) {
-  if (!AC || !s.relay) return;
+  if (!AC || !s.relay || typeof d !== "string" || d.length > 4000) return;   // a real packet is about 2700 characters
   try {
     const u = unb64(d), buf = AC.createBuffer(1, u.length, RELAY.rate), ch = buf.getChannelData(0);
     let sq = 0; for (let i = 0; i < u.length; i++) { ch[i] = ulawDec(u[i]); sq += ch[i] * ch[i]; }
@@ -702,7 +755,7 @@ function relayStop(s) {
 // "Online" = people whose page checked in within PRESENCE_WINDOW. Each online person costs one
 // Firestore write per PRESENCE_EVERY, so raise these if you ever near the free daily limits.
 // Set SHOW_STATS = false to switch all of this off.
-const SHOW_STATS = true, PRESENCE_EVERY = 4 * 60000, PRESENCE_WINDOW = 10 * 60000, STATS_EVERY = 2 * 60000, BUCKET = 600000;
+const SHOW_STATS = true, PRESENCE_EVERY = 4 * 60000, PRESENCE_WINDOW = 10 * 60000, STATS_EVERY = 5 * 60000, BUCKET = 600000;
 let online = null, searching = null, incall = null, stat = null, presenceOn = false, lastPing = 0, lastPoll = 0;
 function onlineLine() { return online > 1 ? "\n" + online + " online now" : ""; }
 const nf = n => n == null ? "–" : n.toLocaleString();
@@ -714,10 +767,10 @@ function showStats() {
   if (mode === "idle" || mode === "searching") refreshRemote();
 }
 async function pollStats() {
-  if (!SHOW_STATS || !uid || document.hidden || mode === "connected" || mode === "connecting" || Date.now() - lastPoll < 60000) return;
+  if (!SHOW_STATS || !uid || document.hidden || mode === "connected" || mode === "connecting" || Date.now() - lastPoll < STATS_EVERY / 2) return;
   lastPoll = Date.now();
   try { online = (await getCountFromServer(query(collection(db, "presence"), where("ts", ">", Timestamp.fromMillis(Date.now() - PRESENCE_WINDOW))))).data().count; } catch {}
-  try { searching = (await getCountFromServer(query(collection(db, "queue"), where("ts", ">", Timestamp.fromMillis(Date.now() - 60000))))).data().count; } catch {}
+  try { searching = (await getCountFromServer(query(collection(db, "queue"), where("ts", ">", Timestamp.fromMillis(Date.now() - FRESH_MS))))).data().count; } catch {}
   try { incall = (await getCountFromServer(query(collection(db, "presence"), where("callTs", ">", Timestamp.fromMillis(Date.now() - 6 * 60000))))).data().count; } catch {}
   try { stat = (await getDoc(doc(db, "stats", "main"))).data() || stat; } catch {}
   showStats();
